@@ -1,0 +1,10 @@
+# Ignore everything
+*
+.gitignore
+
+# Allow Git to track these directories (necessary to reach the plugin)
+!.gitignore
+!wp-content/
+!wp-content/themes/
+!wp-content/themes/motionedits/
+!wp-content/themes/motionedits/**
