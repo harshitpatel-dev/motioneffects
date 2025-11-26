@@ -59,7 +59,8 @@
 						?>
 						<div class="our-blog col-md-4 col-lg-4">
 							<div class="content-wrap">
-								<a href="<?php the_permalink(); ?>" class="img-link">
+								<!-- <a href="<?php //the_permalink(); ?>" class="img-link"> -->
+								<a href="#" class="img-link">
 									<div class="images-contener">
 										<div class="imgs">
 											<?php if ( has_post_thumbnail() ) { 
@@ -74,7 +75,8 @@
 										<h6 class="title"><?php the_title(); ?></h6>
 										<div class="short-desc"><?php the_excerpt(); ?></div>
 										<div class="buttons">
-											<a href="<?php the_permalink();?>" class="btn-readmore"> Read More <span> <img src="<?php echo get_template_directory_uri(); ?>/images/right-arrow.svg" alt="button-arrow"></span></a>
+											<!-- <a href="<?php // the_permalink();?>" class="btn-readmore"> Read More </a> -->
+											<a href="#" class="btn-readmore"> Read More </a>
 										</div>
 									</div>
 								</a>

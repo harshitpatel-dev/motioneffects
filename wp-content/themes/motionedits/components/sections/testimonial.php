@@ -3,6 +3,7 @@ $show_elements = get_sub_field('show_elements');
 $title = get_sub_field('title'); 
 $description = get_sub_field('description');
 $show_video = get_sub_field('show_videos');
+$show_options= get_sub_field('show_options');
 $video_items = get_sub_field('video_items');
 $bg_color = get_sub_field('bg_color');
 $custom_class = get_sub_field('custom_class');
@@ -31,7 +32,7 @@ $custom_class = get_sub_field('custom_class');
         </div>
     </div>
 
-    <?php if ( $show_video && ! empty( $video_items ) && is_array( $video_items ) ) : ?>
+    <?php if ( $show_video && $show_options== 'videos' && !empty( $video_items ) && is_array( $video_items ) ) : ?>
         <div class="testimonials-video-wrapper">
             <div class="testimonial-video-slider">
                 <?php foreach ( $video_items as $video_item ) :
@@ -188,11 +189,11 @@ $custom_class = get_sub_field('custom_class');
                     autoplay: true,
                     infinite: true,
                     cssEase: 'linear',
-                    draggable: true,
+                    draggable: false,
                     responsive: [
-                        { breakpoint: 1199, settings: { slidesToShow: 3 } },
-                        { breakpoint: 767, settings: { slidesToShow: 2 } },
-                        { breakpoint: 576, settings: { slidesToShow: 1 } }
+                        { breakpoint: 1199, settings: { slidesToShow: 4 } },
+                        { breakpoint: 991, settings: { slidesToShow: 3 } },
+                        { breakpoint: 576, settings: { slidesToShow: 2 } }
                     ]
                 });
 
@@ -235,7 +236,7 @@ $custom_class = get_sub_field('custom_class');
                             frameborder: 0,
                             allow: 'autoplay; encrypted-media; picture-in-picture',
                             allowfullscreen: true,
-                            class: 'w-100 h-100'
+                            class: 'w-auto h-100 mx-auto d-block'
                         });
                         videoContainer.append(iframe);
                     }
@@ -248,6 +249,8 @@ $custom_class = get_sub_field('custom_class');
             });
         </script>
     <?php endif; ?>
+
+    <?php if($show_options== 'reviews'): ?>
 
     <div class="testimonials-inner-wrapper">
         <?php
@@ -313,47 +316,51 @@ $custom_class = get_sub_field('custom_class');
                 <?php wp_reset_postdata(); 
             endif;?>
     </div>
+    <?php endif;?>
+
 
 </section>
 
-<script>
-    jQuery(document).ready(function($){
+<?php if($show_options== 'reviews'): ?>
+    <script>
+        jQuery(document).ready(function($){
 
-        const $slider = $('.testimonials-slider');
-    
-        // Initialize Testimonials Slider
-        if($slider.length) {
-            $slider.slick({
-                slidesToShow: 1,
-                centerMode: true,
-                variableWidth: true,
-                autoplay: false,
-                dots: true,
-                arrows: false,
-                infinite: true,
-                appendDots: $('.testimonial-dots-wrapper'),
-                responsive: [
-                    {
-                        breakpoint: 576,
-                        settings: {
-                            slidesToShow: 1,
-                            slidesToScroll: 1,
-                            variableWidth: false,
-                            centerMode: false,
-                        }
-                    }
-                ]
-            });
-
-            // External arrows
-            $('.testimonial-prev').on('click', function() {
-                $slider.slick('slickPrev');
-            });
-            $('.testimonial-next').on('click', function() {
-                $slider.slick('slickNext');
-            });
-
-        }
+            const $slider = $('.testimonials-slider');
         
-});
-</script>
+            // Initialize Testimonials Slider
+            if($slider.length) {
+                $slider.slick({
+                    slidesToShow: 1,
+                    centerMode: true,
+                    variableWidth: true,
+                    autoplay: false,
+                    dots: true,
+                    arrows: false,
+                    infinite: true,
+                    appendDots: $('.testimonial-dots-wrapper'),
+                    responsive: [
+                        {
+                            breakpoint: 576,
+                            settings: {
+                                slidesToShow: 1,
+                                slidesToScroll: 1,
+                                variableWidth: false,
+                                centerMode: false,
+                            }
+                        }
+                    ]
+                });
+
+                // External arrows
+                $('.testimonial-prev').on('click', function() {
+                    $slider.slick('slickPrev');
+                });
+                $('.testimonial-next').on('click', function() {
+                    $slider.slick('slickNext');
+                });
+
+            }
+            
+    });
+    </script>
+<?php endif;?>

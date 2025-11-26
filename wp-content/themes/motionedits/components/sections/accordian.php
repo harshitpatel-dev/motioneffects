@@ -28,16 +28,18 @@ $background_style  = get_sub_field('bg_color');
                                         <?php endif; ?>
 
                                         <?php if (in_array('Button', $show_elements)) : ?>
-                                            <div class="buttons">
-                                                <?php if(!empty($button)): 
-                                                    $button_link = $button['link'];
-                                                    $button_name = $button['label'];
-                                                    $btn_class = $button['btn_class'];
-                                                ?>
-                                                    <?php if($button_name):?>
-                                                        <a href="<?php echo $button_link; ?>" class="btn <?php echo $btn_class; ?>"><?php echo $button_name; ?></a>
+                                            <div class="buttons desktop-btn">
+                                                <?php ob_start(); ?>
+                                                    <?php if(!empty($button)): 
+                                                        $button_link = $button['link'];
+                                                        $button_name = $button['label'];
+                                                        $btn_class = $button['btn_class'];
+                                                    ?>
+                                                        <?php if($button_name):?>
+                                                            <a href="<?php echo $button_link; ?>" class="btn <?php echo $btn_class; ?>"><?php echo $button_name; ?></a>
+                                                        <?php endif; ?>
                                                     <?php endif; ?>
-                                                <?php endif; ?>
+                                                <?php echo $button_html = ob_get_clean(); ?>
                                             </div>
                                         <?php endif; ?>
 
@@ -89,6 +91,8 @@ $background_style  = get_sub_field('bg_color');
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <div class="buttons mobile-btn d-none"><?php echo $button_html; ?></div>
 
             </div>
         </div>

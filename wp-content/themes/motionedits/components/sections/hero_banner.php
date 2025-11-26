@@ -2,8 +2,9 @@
 	$heroTitle = get_sub_field('title');
 	$herosub_title = get_sub_field('sub_title');
 	$heroDesp = get_sub_field('description');
-	$show_trusted_by = get_sub_field('show_trusted_by');
+	$show_options = get_sub_field('show_options');
 	$trusted_by = get_sub_field('trusted_by');
+	$about_company = get_sub_field('about_company');
 	$bgColor = get_sub_field('bg_color');
     $custom_class  = get_sub_field('custom_class');
 ?>
@@ -48,13 +49,13 @@
 					</div>
 				<?php endif; ?>	
 
-				<?php if($show_trusted_by == 'Show' && !empty($trusted_by)): ?>
+				<?php if($show_options == 'Trusted By' && !empty($trusted_by)): ?>
 					<?php 
 						$trusted_title = $trusted_by['title'];
 						$trusted_items = $trusted_by['items'];
 						$bgColor = $trusted_by['bg_color'];
 					?>
-					<div class="heroBanner__trustedBy" style="background-color: <?php echo $bgColor; ?>;">
+					<div class="heroBanner__trustedBy heroBanner_commanEffect" style="background-color: <?php echo $bgColor; ?>;">
 						<div class="heroBanner__trustedBy-inner">
 							<?php if ($trusted_title): ?>
 								<div class="heroBanner__trustedBy-title_dublicate">
@@ -91,6 +92,37 @@
 									<?php endforeach; ?>
 								</div>
 							<!-- </div> -->
+							<?php endif; ?>
+						</div>
+					</div>
+				
+				<?php elseif($show_options == 'About Company' && !empty($about_company)): ?>
+					<?php 
+						$company_items = $about_company['items'];
+						$bgColor = $about_company['bg_color'];
+					?>
+					<div class="heroBanner__about heroBanner_commanEffect" style="background-color: <?php echo $bgColor; ?>;">
+						<div class="heroBanner__about-inner">
+							
+							<?php if($company_items): ?>
+								<div class="heroBanner__about-slider">
+									<?php foreach($company_items as $company_item): ?>
+									<div class="heroBanner__about-item">
+										<?php if(!empty($company_item['title'])): ?>
+											<div class="item-wrapper">
+													<h3 class="title">
+														<?php echo $company_item['title']; ?>
+													</h3>
+												<?php if(!empty($company_item['description'])): ?>
+													<div class="desc">
+														<?php echo $company_item['description']; ?>
+													</div>
+												<?php endif;?>
+											</div>
+										<?php endif;?>
+									</div>
+									<?php endforeach; ?>
+								</div>
 							<?php endif; ?>
 						</div>
 					</div>

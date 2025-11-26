@@ -15,7 +15,7 @@ jQuery(document).ready(function($) {
         jQuery(this).parent().toggleClass('active');
     });
 
-    // Hero Banner
+    // Hero Banner trustedBy
     jQuery('.heroBanner__trustedBy-slider').slick({
         infinite: true,
         dots: false,
@@ -27,15 +27,10 @@ jQuery(document).ready(function($) {
         slidesToShow:5,
         slidesToScroll:1,
         cssEase: 'linear',
-        draggable: true,
+        draggable: false,
+        pauseOnHover: false,
+        pauseOnFocus: false,
         responsive: [
-            {
-              breakpoint: 1440,
-              settings: {
-                slidesToShow: 5,
-                slidesToScroll: 1
-              }
-            },
             {
               breakpoint: 1280,
               settings: {
@@ -53,7 +48,7 @@ jQuery(document).ready(function($) {
             {
               breakpoint: 576,
               settings: {
-                slidesToShow: 2,
+                slidesToShow: 3,
                 slidesToScroll: 1
               }
             }
@@ -112,6 +107,40 @@ jQuery(document).ready(function($) {
 
     // Apply on reposition
     jQuery('.our-blogs-content').on('setPosition', function () {
+      equalizeVisibleHeights(jQuery(this));
+    });
+
+    /* Our Packages */
+    jQuery('.packages-slider').slick({
+        slidesToShow: 3,
+        slidesToScroll: 1,
+        dots: true,
+        arrows: false,
+        autoplay: false,
+        adaptiveHeight: true,
+        speed: 600,
+        easing: 'ease',
+        infinite: true,
+        responsive: [
+            {
+                breakpoint: 991,
+                settings: {
+                    slidesToShow: 2,
+                    slidesToScroll: 1,
+                }
+            },
+            {
+                breakpoint: 576,
+                settings: {
+                    slidesToShow: 1,
+                    slidesToScroll: 1,
+                    dots: true,
+                }
+            }
+        ]
+    });
+    
+    jQuery('.packages-slider').on('setPosition', function () {
       equalizeVisibleHeights(jQuery(this));
     });
 

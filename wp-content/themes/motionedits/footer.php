@@ -100,7 +100,8 @@
 									<div class="footer-menu-wrap">
 										<?php while ( have_rows( 'add_menu', 'option' ) ) : the_row(); ?>
 											<div class="footer-menu">
-												<h5><?php the_sub_field( 'title' ); ?><i class='bx bx-chevron-down'></i></h5>
+												<!-- <h5><?php the_sub_field( 'title' ); ?><i class='bx bx-chevron-down'></i></h5> -->
+												<h5><?php the_sub_field( 'title' ); ?><span class="dropdown"><img src="<?php echo get_template_directory_uri();?>/images/footer-dropdown.svg" alt="dropdown"> </span></h5>
 												<?php the_sub_field( 'select_menu' ); ?>
 											</div>
 										<?php endwhile; ?>

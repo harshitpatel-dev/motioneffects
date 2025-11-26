@@ -22,6 +22,7 @@ if (have_rows('grid_columns')) {
     }
 }
 $total_grids = count($grids);
+$grid_odd_class = ($total_grids % 2 !== 0) ? ' odd-grid' : '';
 
 if($mobile_slider){
     $mobile_slider_class= 'mobile-grid-slider mobile-slider-enabled';
@@ -30,7 +31,6 @@ if($mobile_slider){
 <section class="grid_columnWrap motion-wrap <?php echo $custom_class; ?>" style="background-color: <?php echo $bg_color; ?>;">
     <div class="motion-container">
         <div class="grid_column">
-
             <!-- TITLE + DESCRIPTION -->
             <?php if(in_array('Title', $show_elements)) : ?>
                 <div class="column-sub-desc-main-title">
@@ -56,7 +56,7 @@ if($mobile_slider){
                     : 'col-md-4 col-lg-4'; // default for 3-columns
                 ?>
                 <div class="grid_column_columns Services">
-                    <div class="grid-services-slider row justify-content-center">
+                    <div class="grid-services-slider row justify-content-center <?php echo $grid_odd_class;?>">
 
                         <?php foreach($grids as $grid): ?>
                             <div class="grid <?php echo $col_class; ?>">
@@ -89,7 +89,7 @@ if($mobile_slider){
                                             <div class="buttons">
                                                 <a href="<?php echo esc_url($grid['buttons']['button_url']); ?>" class="btn-viewmore">
                                                     <?php echo esc_html($grid['buttons']['button_name']); ?>
-                                                    <span><img src="<?php echo get_template_directory_uri(); ?>/images/right-arrow.svg"></span>
+                                                    <!-- <span><img src="<?php echo get_template_directory_uri(); ?>/images/right-arrow.svg"></span> -->
                                                 </a>
                                             </div>
                                         </div>
@@ -130,7 +130,7 @@ if($mobile_slider){
                 ?>
 
                 <div class="grid_column_columns Tools">
-                    <div class="<?php echo $mobile_slider_class;?> row justify-content-center">
+                    <div class="<?php echo $mobile_slider_class;?> <?php echo $grid_odd_class;?> row justify-content-center">
 
                         <?php 
                         $grid_index = 0;
@@ -142,7 +142,7 @@ if($mobile_slider){
 
                                 // Column class for Tools
                                 if ($row_count == 3) $col = 'col-sm-6 col-lg-4';
-                                elseif ($row_count == 2) $col = 'col-md-6';
+                                elseif ($row_count == 2) $col = 'col-sm-6';
                                 else $col = 'col-md-12';
                         ?>
                             <div class="grid <?php echo $col; ?>">
@@ -195,7 +195,7 @@ jQuery(document).ready(function($){
     $('.grid-services-slider').slick({
         slidesToShow: <?php echo (int) $grid_column_count; ?>,
         slidesToScroll: 1,
-        dots: true,
+        dots: false,
         arrows: false,
         autoplay: true,
         responsive: [
