@@ -178,6 +178,7 @@ function motionedits_scripts() {
         ['motionedits-slick'],
         '1.8.1'
     );
+	wp_enqueue_style('motionedits-aos-style', get_template_directory_uri() . '/css/aos.css', array(), $theme_version);
 
 	wp_enqueue_style( 'motionedits-variables', get_template_directory_uri().'/css/variables.css', array(), _S_VERSION );
 
@@ -225,6 +226,15 @@ function motionedits_scripts() {
 		$theme_version, 
 		true
 	);
+
+	wp_enqueue_script(
+        'motionedits-aos-js',
+        get_template_directory_uri() . '/js/aos.js',
+        [],
+        $theme_version,
+        true
+    );
+
 
     wp_enqueue_script(
         'motionedits-custom-js',

@@ -35,7 +35,12 @@
                             $package_title = $package_detail['package_title'];
                             $price_range = $package_detail['price_range'];
                             $package_features = $package_detail['package_features'];
-                            $button = $package_detail['button'];
+                            $buttons = $package_detail['buttons'];
+						
+							if(!empty($buttons)){
+								$label = $buttons['label'];
+								$link = $buttons['link'];
+							}
                         ?>
 
                         <div class="col-sm-12 col-lg-4 col-xl-4 pricing-column">
@@ -55,9 +60,11 @@
                                         <?php endforeach;?>
                                     </ul>
 
-                                    <div class="buttons">
-                                        <a role="button" class="btn btn-green select-plan"><?php echo $button;?></a>
-                                    </div>
+                                    <?php if(!empty($label) && !empty($link)):?>
+                                        <div class="buttons">
+                                            <a href="<?php echo $label;?>" role="button" class="btn btn-green select-plan"><?php echo $label;?></a>
+                                        </div>
+									<?php endif;?>
                                 </div>
                             </div>
                         </div>

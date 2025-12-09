@@ -44,7 +44,7 @@
 				</nav><!-- #site-navigation -->
 
 				<div class="contact-wrapper">
-						<a class="btn-contact" href="<?php echo home_url(); ?>/contact-us"><span>Contact Us</span> <i class='bx bx-right-arrow-alt'></i></a>
+						<a class="btn-contact" href="<?php echo home_url(); ?>#contact-us"><span>Contact Us</span> <i class='bx bx-right-arrow-alt'></i></a>
 				</div>
 
 			</div>

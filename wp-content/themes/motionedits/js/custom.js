@@ -1,5 +1,12 @@
 jQuery(document).ready(function($) {
 
+    jQuery(window).on('load', function () {
+        AOS.refresh();
+    });
+    jQuery(function () {
+        AOS.init();
+    });
+
     // Fixed Header
     jQuery(window).scroll(function() {
         var scroll = jQuery(window).scrollTop();
@@ -16,7 +23,49 @@ jQuery(document).ready(function($) {
     });
 
     // Hero Banner trustedBy
-    jQuery('.heroBanner__trustedBy-slider').slick({
+    if (jQuery('.heroBanner__trustedBy-slider').length) {
+        console.log(`jQuery('.heroBanner__trustedBy-slider').length`, jQuery('.heroBanner__trustedBy-slider').length);
+        jQuery('.heroBanner__trustedBy-slider').slick({
+            infinite: true,
+            dots: false,
+            arrows: false,
+            autoStart: true,
+            autoplay: true,
+            autoplaySpeed: 0,
+            speed: 5000,
+            slidesToShow:5,
+            slidesToScroll:1,
+            cssEase: 'linear',
+            draggable: false,
+            pauseOnHover: false,
+            pauseOnFocus: false,
+            responsive: [
+                {
+                breakpoint: 1280,
+                settings: {
+                    slidesToShow: 4,
+                    slidesToScroll: 1
+                }
+                },
+                {
+                breakpoint: 767,
+                settings: {
+                    slidesToShow: 3,
+                    slidesToScroll: 1
+                }
+                },
+                {
+                breakpoint: 576,
+                settings: {
+                    slidesToShow: 3,
+                    slidesToScroll: 1
+                }
+                }
+            ]
+        });
+    }
+
+    jQuery('.heroBanner__about-slider').slick({
         infinite: true,
         dots: false,
         arrows: false,
@@ -24,20 +73,13 @@ jQuery(document).ready(function($) {
         autoplay: true,
         autoplaySpeed: 0,
         speed: 5000,
-        slidesToShow:5,
+        slidesToShow:4,
         slidesToScroll:1,
         cssEase: 'linear',
         draggable: false,
         pauseOnHover: false,
         pauseOnFocus: false,
         responsive: [
-            {
-              breakpoint: 1280,
-              settings: {
-                slidesToShow: 4,
-                slidesToScroll: 1
-              }
-            },
             {
               breakpoint: 767,
               settings: {
@@ -48,7 +90,14 @@ jQuery(document).ready(function($) {
             {
               breakpoint: 576,
               settings: {
-                slidesToShow: 3,
+                slidesToShow: 2,
+                slidesToScroll: 1
+              }
+            },
+            {
+              breakpoint: 420,
+              settings: {
+                slidesToShow: 2,
                 slidesToScroll: 1
               }
             }
