@@ -11,12 +11,16 @@
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 	<header class="entry-header">
-		<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
+		<div class="column-sub-desc-main-title">
+			<div class="column-main-title text-center">
+				<?php the_title( '<h2 class="entry-title">', '</h2>' ); ?>
+			</div>
+		</div>
 	</header><!-- .entry-header -->
 
 	<?php motionedits_post_thumbnail(); ?>
 
-	<div class="entry-content">
+	<div class="entry-content mt-0">
 		<?php
 		the_content();
 

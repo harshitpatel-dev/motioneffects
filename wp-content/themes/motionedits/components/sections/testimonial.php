@@ -8,6 +8,8 @@ $video_items = get_sub_field('video_items');
 $review_short_code = get_sub_field('review_short_code');
 $bg_color = get_sub_field('bg_color');
 $custom_class = get_sub_field('custom_class');
+// animation delay counter (ms)
+$animation_delay = 0;
 ?>
 
 <section class="testimonials motion-wrap <?php echo esc_attr($custom_class); ?>"
@@ -15,7 +17,8 @@ $custom_class = get_sub_field('custom_class');
     <div class="motion-container">
         <div class="grid_column">
             <?php if (in_array('Title', $show_elements) || in_array('Description', $show_elements)): ?>
-                <div class="column-sub-desc-main-title">
+                <div class="column-sub-desc-main-title" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                    <?php $animation_delay += 200; ?>
                     <div class="row">
                         <div
                             class="column-main-title <?php if (in_array('Description', $show_elements)): ?>description<?php endif; ?>">
@@ -101,7 +104,8 @@ $custom_class = get_sub_field('custom_class');
                         }
                     }
                     ?>
-                    <div class="testimonial-grid px-2">
+                    <div class="testimonial-grid px-2" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                        <?php $animation_delay += 100; ?>
                         <div class="testimonial-video-card" data-type="<?php echo esc_attr($video_type); ?>"
                             data-src="<?php echo esc_attr($embed_url); ?>" data-video-id="<?php echo esc_attr($video_id); ?>"
                             data-card-index="<?php echo $index; ?>">
@@ -109,13 +113,13 @@ $custom_class = get_sub_field('custom_class');
                             <div class="testimonial-media">
                                 <?php if ($thumb_url): ?>
                                     <img src="<?php echo $thumb_url; ?>" alt="<?php echo esc_attr($name); ?>"
-                                        class="img-fluid testimonial-thumb" />
+                                        class="img-fluid testimonial-thumb" fetchpriority="high" loading="lazy" />
                                 <?php elseif ($video_id && strpos($embed_url, 'youtube.com') !== false): ?>
-                                    <img src="https://img.youtube.com/vi/<?php echo $video_id; ?>/maxresdefault.jpg"
+                                    <img fetchpriority="high" loading="lazy" src="https://img.youtube.com/vi/<?php echo $video_id; ?>/maxresdefault.jpg"
                                         alt="<?php echo esc_attr($name); ?>" class="img-fluid testimonial-thumb youtube-thumb"
                                         onerror="this.src='https://img.youtube.com/vi/<?php echo $video_id; ?>/hqdefault.jpg'" />
                                 <?php elseif ($video_id && strpos($embed_url, 'vimeo.com') !== false): ?>
-                                    <img src="" alt="<?php echo esc_attr($name); ?>" class="img-fluid testimonial-thumb vimeo-thumb"
+                                    <img src="" fetchpriority="high" loading="lazy" alt="<?php echo esc_attr($name); ?>" class="img-fluid testimonial-thumb vimeo-thumb"
                                         data-vimeo-id="<?php echo $video_id; ?>" />
                                 <?php elseif ($video_type === 'File'): ?>
                                     <video class="testimonial-thumb file-video-thumb" muted preload="metadata"
@@ -234,12 +238,30 @@ $custom_class = get_sub_field('custom_class');
                     autoplaySpeed: 3000,
                     infinite: false,
                     cssEase: 'linear',
-                    draggable: false,
+//                     draggable: false,
+					/* 🔥 Drag & swipe tuning */
+    swipe: true,
+    draggable: true,
+    touchMove: true,
+    swipeToSlide: false,
+					
+					touchThreshold: 4,   // LOWER = faster swipe
+    speed: 250,          // FAST animation
+    cssEase: 'cubic-bezier(0.4, 0, 0.2, 1)', // Google Material easing
+
+    /* Prevent sluggish feel */
+    waitForAnimate: false,
+    edgeFriction: 0.15,
+
+    /* Stability */
+    accessibility: false,
+					adaptiveHeight: false,
                     responsive: [
                         { breakpoint: 1199, settings: { slidesToShow: 4 } },
                         { breakpoint: 991, settings: { slidesToShow: 3 } },
-                        { breakpoint: 576, settings: { slidesToShow: 2 } },
-                        { breakpoint: 420, settings: { slidesToShow: 1 } }
+						{ breakpoint: 767, settings: { slidesToShow: 2.5,slidesToScroll: 1 } },
+                        { breakpoint: 576, settings: { slidesToShow: 2.1,slidesToScroll: 1 } },
+                        { breakpoint: 420, settings: { slidesToShow: 1.5,slidesToScroll: 1 } }
                     ]
                 });
 
@@ -436,13 +458,71 @@ $custom_class = get_sub_field('custom_class');
     <?php endif; ?>
 
     <?php if($show_options== 'reviews'): ?>
-
-        <div class="testimonials-inner-wrapper">
+        <div class="testimonials-inner-wrapper" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+            <?php $animation_delay += 200; ?>
             <div class="motion-container">
             <?php echo do_shortcode($review_short_code); ?>
             </div>
         </div>
     <?php endif;?>
 
+    <?php if($show_options== 'custom-reviews'): ?>
+        <?php
+            // Query testimonials
+            $args = array(
+                'post_type' => 'testimonial',
+                'posts_per_page' => -1,
+                'orderby' => 'date',
+                'order' => 'DESC'
+            );
+            $testimonial_query = new WP_Query($args);
 
+            if ($testimonial_query->have_posts()) : ?>
+                    <div class="testimonial_slider_wrapper">
+                        <div class="testimonials-slider">
+                            <?php while ($testimonial_query->have_posts()) : $testimonial_query->the_post();
+                                $description = get_field(selector: 'description');
+                                $image   = get_field('image');
+                                $name = get_field('name');
+                                $designation    = get_field(selector: 'designation');
+                                ?>
+                                <div class="testimonial-card">
+                                    <div class="testimonial-gap">
+                                        <div class="testimonial-wrapper">
+                                            <div class="card-body">
+                                                <div class="colun-wrapper">
+                                                    <img src="<?php echo get_template_directory_uri(); ?>/images/quotes.svg" alt="quotes">
+                                                </div>
+                                                <?php if (!empty($description)) : ?>
+                                                        <div class="desc"><?php echo wp_kses_post($description); ?></div>
+                                                    <?php endif; ?>
+                                                <div class="details">
+                                                    <?php if (!empty($image)) : ?>
+                                                        <div class="image-wrapper">
+                                                            <img src="<?php echo esc_url($image); ?>" alt="<?php echo esc_attr($name); ?>">
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <div class="details-text">
+                                                        <?php if (!empty($name)) : ?>
+                                                            <h6 class="name"><?php echo esc_html($name); ?></h6>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($designation)) : ?>
+                                                            <span class="designation"><?php echo esc_html($designation); ?></span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endwhile; ?>
+                        </div>
+                        <div class="testimonial-controls">
+                            <button class="testimonials-prev-btn"><i class="bx bx-chevron-left"></i></button>
+                            <button class="testimonials-next-btn"><i class="bx bx-chevron-right"></i></button>
+                        </div>
+                    </div>
+                <?php wp_reset_postdata();
+            endif;?>
+    <?php endif; ?>
 </section>

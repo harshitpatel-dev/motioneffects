@@ -5,6 +5,8 @@ $description = get_sub_field('description');
 $team_members = get_sub_field('team_members');
 $custom_class = get_sub_field('custom_class');
 $bg_color = get_sub_field('bg_color');
+// animation delay counter (ms)
+$animation_delay = 0;
 ?>
 
 <section class="ourTeam_wrapper motion-wrap <?php echo esc_attr($custom_class); ?>"
@@ -12,7 +14,8 @@ $bg_color = get_sub_field('bg_color');
     <div class="motion-container">
         <div class="ourTeam_wrapper-container">
             <?php if (in_array('Title', $show_elements)): ?>
-                <div class="column-sub-desc-main-title pb-0">
+                <div class="column-sub-desc-main-title pb-0" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                    <?php $animation_delay += 200; ?>
                     <div class="row">
                         <div
                             class="column-main-title <?php if (in_array('Description', $show_elements)): ?>description<?php endif; ?>">
@@ -40,12 +43,13 @@ $bg_color = get_sub_field('bg_color');
                         $member_bio = $team_member['member_bio'];
                         $reverse = ($index % 2 !== 0);
                         ?>
-                        <div class="ourteam_row">
+                        <div class="ourteam_row" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                            <?php $animation_delay += 100; ?>
                             <div class="items image-item <?php echo $reverse ? 'order-two' : 'order-one'; ?>">
                                 <div class="content-wrap">
                                     <div class="image-border">
                                         <div class="image_wrapper">
-                                            <img src="<?php echo esc_url($member_image); ?>" alt="<?php echo esc_attr($member_name); ?>">
+                                            <img src="<?php echo esc_url($member_image); ?>" alt="<?php echo esc_attr($member_name); ?>" loading="lazy">
                                         </div>
                                     </div>
                                 </div>

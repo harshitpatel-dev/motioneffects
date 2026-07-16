@@ -11,7 +11,7 @@
     font-family: 'slick';
     font-weight: normal;
     font-style: normal;
-
+    font-display: swap !important;
     src: url('../fonts/webfonts/slick.eot');
     src: url('../fonts/webfonts/slick.eot?#iefix') format('embedded-opentype'), url('../fonts/webfonts/slick.woff') format('woff'), url('../fonts/webfonts/slick.ttf') format('truetype'), url('../fonts/webfonts/slick.svg#slick') format('svg');
 }

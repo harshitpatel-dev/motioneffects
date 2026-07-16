@@ -38,11 +38,11 @@
                             $title = $specialization_card['title'];
                         ?>
                             <div class="specialize-card col-6 col-sm-4 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
-                                <?php $animation_delay += 200; ?>
+                                <?php $animation_delay = 200; ?>
                                 <div class="content-wrapper">
                                     <?php if(!empty($icon) && !empty($title)): ?>
                                         <div class="image-wrapper">
-                                            <img src="<?php echo $icon;?>" alt="<?php echo $title;?>" />
+                                            <img src="<?php echo $icon;?>" alt="<?php echo $title;?>" fetchpriority="high" loading="lazy" />
                                         </div>
                                     <?php endif; ?>
                                     <?php if(!empty($title)): ?>

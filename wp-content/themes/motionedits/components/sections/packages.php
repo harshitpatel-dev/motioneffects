@@ -5,12 +5,15 @@
     $package_details = get_sub_field("package_details");
     $bg_color  = get_sub_field( 'bg_color' );
     $custom_class  = get_sub_field( 'custom_class' );
+    // animation delay counter (ms)
+    $animation_delay = 0;
 ?>
-<section class="packagesWrap <?php echo esc_attr($custom_class); ?>" style="background-color: <?php echo $bg_color ?>;">
+<section class="packagesWrap <?php echo esc_attr($custom_class); ?>" id="packages" style="background-color: <?php echo $bg_color ?>;">
 	<div class="motion-container">
 		<div class="packages-inner-wrapper">
             <?php if( in_array('Title',$show_elements)) : ?>
-                <div class="column-sub-desc-main-title">
+                <div class="column-sub-desc-main-title" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                    <?php $animation_delay += 200; ?>
                     <div class="row">
                         <div class="column-main-title <?php if(in_array('Description',$show_elements)): ?>description<?php endif; ?>">
                             <?php  if( in_array('Title',$show_elements)) : ?>
@@ -34,6 +37,7 @@
                             foreach ($package_details as $package_detail):
                             $package_title = $package_detail['package_title'];
                             $price_range = $package_detail['price_range'];
+                            $price_sub_title = $package_detail['price_sub_title'];
                             $package_features = $package_detail['package_features'];
                             $buttons = $package_detail['buttons'];
 						
@@ -43,7 +47,8 @@
 							}
                         ?>
 
-                        <div class="col-sm-12 col-lg-4 col-xl-4 pricing-column">
+                        <div class="col-sm-12 col-lg-4 col-xl-4 pricing-column" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                            <?php $animation_delay += 100; ?>
                             <div class="packages-card">
                                 <div class="item-wrapper">
                                     <div class="package-title">
@@ -52,6 +57,7 @@
                                     
                                     <div class="price-range">
                                         <?php echo $price_range ;?>
+                                        <span><?php echo $price_sub_title ;?></span>
                                     </div>
 
                                     <ul class="plan-list">
@@ -61,9 +67,9 @@
                                     </ul>
 
                                     <?php if(!empty($label) && !empty($link)):?>
-                                        <div class="buttons">
-                                            <a href="<?php echo $label;?>" role="button" class="btn btn-green select-plan"><?php echo $label;?></a>
-                                        </div>
+									<div class="buttons">
+                                        <a href="<?php echo $link;?>" role="button" class="btn btn-green select-plan"><?php echo $label;?></a>
+                                    </div>
 									<?php endif;?>
                                 </div>
                             </div>

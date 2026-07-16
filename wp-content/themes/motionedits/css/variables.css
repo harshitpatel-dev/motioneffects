@@ -27,5 +27,11 @@
     --olive-green: #C0D3B2;
     --footer-border: #A79F99;
     --packages-card: #FFFBF7;
-    --light-peach: #FFE3CF;
+	--brown-gradient:linear-gradient(180deg, rgba(94, 48, 35, 0.2) 0%, #5E3023 100%);
+    --slider-progress-light:#CFAFA6;
+	--light-peach: #FFE3CF;
+	--shadow-rgb-color: rgba(0, 0, 0, 0.15);
+    --card-white-color:#FFFFFF99;
+	--card-brown-color: #FBF0E833;
+	--submenu-border: #EDEDED;
 }

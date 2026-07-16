@@ -171,6 +171,8 @@ function motionedits_scripts() {
         [],
         '1.8.1'
     );
+	
+	wp_style_add_data( 'slick-css', 'preload', true );
 
     wp_enqueue_style(
         'motionedits-slick-theme',
@@ -178,9 +180,9 @@ function motionedits_scripts() {
         ['motionedits-slick'],
         '1.8.1'
     );
-	wp_enqueue_style('motionedits-aos-style', get_template_directory_uri() . '/css/aos.css', array(), $theme_version);
 
 	wp_enqueue_style( 'motionedits-variables', get_template_directory_uri().'/css/variables.css', array(), _S_VERSION );
+	wp_enqueue_style( 'motionedits-aos', get_template_directory_uri().'/css/aos.css', array(), _S_VERSION );
 
     // Main style.css
     wp_enqueue_style(
@@ -190,59 +192,57 @@ function motionedits_scripts() {
         $theme_version
     );
     wp_style_add_data('motionedits-style', 'rtl', 'replace');
+    
+    
+   // print get_template_directory_uri() . '/js/bootstrap.bundle.min.js'; exit;
 
     // Bootstrap Bundle (includes Popper)
     wp_enqueue_script(
         'motionedits-bootstrap',
         get_template_directory_uri() . '/js/bootstrap.bundle.min.js',
-        ['jquery'],
+        array('jquery'),
         '5.3.8',
         true
     );
 
-    // Slick Slider JS
-    wp_enqueue_script(
-        'motionedits-slick',
-        get_template_directory_uri() . '/js/slick.min.js',
-        ['jquery'],
-        '1.8.1',
-        true
-    );
+    
 
     // Custom navigation or main script
     wp_enqueue_script(
         'motionedits-navigation',
         get_template_directory_uri() . '/js/navigation.js',
-        [],
-        $theme_version,
-        true
-    );
-
-	// Isotope script
-	wp_enqueue_script('
-		motionedits-isotope-js', 
-		get_template_directory_uri() . '/js/isotope.min.js', 
-		[], 
-		$theme_version, 
-		true
-	);
-
-	wp_enqueue_script(
-        'motionedits-aos-js',
-        get_template_directory_uri() . '/js/aos.js',
-        [],
+        array('jquery'),
         $theme_version,
         true
     );
 
 
     wp_enqueue_script(
-        'motionedits-custom-js',
-        get_template_directory_uri() . '/js/custom.js',
-        [],
+        'motionedits-aos-js',
+        get_template_directory_uri() . '/js/aos.js',
+        array('jquery'),
         $theme_version,
         true
     );
+    
+    // Slick Slider JS
+    wp_enqueue_script(
+        'motionedits-slick',
+        get_template_directory_uri() . '/js/slick.min.js',
+        array('jquery'),
+        '1.8.1',
+        true
+    );
+
+    wp_enqueue_script(
+        'motionedits-custom-js',
+        get_template_directory_uri() . '/js/custom.js',
+        array('jquery'),
+        $theme_version,
+        true
+    );
+    
+    
 
     // Comment reply for threaded comments
     if (is_singular() && comments_open() && get_option('thread_comments')) {
@@ -250,6 +250,7 @@ function motionedits_scripts() {
     }
 }
 add_action('wp_enqueue_scripts', 'motionedits_scripts');
+
 
 /**
  * Implement the Custom Header feature.
@@ -299,6 +300,7 @@ function my_acf_op_init() {
 			'page_title'  => __('Theme General Settings'),
             'menu_title'  => __('Theme Settings'),
             'redirect'    => false,
+			'capability'  => 'manage_options',
         ));
 		
     }
@@ -313,3 +315,373 @@ function cc_mime_types($mimes) {
     return $mimes;
 }
 add_filter('upload_mimes', 'cc_mime_types');
+
+// 'display'  => __('Once Monthly'),
+add_filter('cron_schedules', function ($schedules) {
+    $schedules['monthly'] = [
+        'interval' => MONTH_IN_SECONDS,
+		'display'  => __('Once Monthly'),
+    ];
+    return $schedules;
+});
+
+/**
+ * MAIN FUNCTION TO EXPORT AND SEND CSV
+ */
+function cfdb7_send_csv()
+{
+    global $wpdb;
+
+	error_log('Cron Triggered Successfully at: ' . current_time('mysql'));
+    $admin_email = get_option('admin_email');
+    $table = $wpdb->prefix . 'db7_forms';
+
+    // DATE RANGE: previous month
+    $from = date('Y-m-01', strtotime('first day of last month'));
+    $to   = date('Y-m-t', strtotime('last day of last month'));
+
+
+
+    // FETCH SUBMISSIONS
+    $results = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT * FROM $table WHERE form_date BETWEEN %s AND %s ORDER BY form_date ASC",
+            $from,
+            $to
+        ),
+        ARRAY_A
+    );
+
+    if (empty($results)) {
+        error_log(" CFDB7: No records found for $from to $to");
+        return;
+    }
+
+    // CREATE CSV FILE
+    $upload_dir = wp_upload_dir();
+    $file_path = $upload_dir['basedir'] . "/cfdb7_submissions_{$from}_to_{$to}.csv";
+
+    $fp = fopen($file_path, 'w');
+
+    // CSV HEADER
+    $header = [
+        'Submission Date',
+        'Name',
+        'Email',
+        'Phone Number',
+        'Country',
+        'Message',
+        'Math Captcha'
+    ];
+    fputcsv($fp, $header);
+
+    // FILL CSV ROWS
+    foreach ($results as $row) {
+        $data = maybe_unserialize($row['form_value']);
+		
+		$country = '';
+
+        if (!empty($data['country'])) {
+            $country = is_array($data['country'])
+                ? implode(', ', $data['country'])
+                : $data['country'];
+        } elseif (!empty($data['Country'])) {
+            $country = is_array($data['Country'])
+                ? implode(', ', $data['Country'])
+                : $data['Country'];
+        }
+
+        fputcsv($fp, [
+            $row['form_date'],
+            $data['your-name'] ?? '',
+            $data['your-email'] ?? '',
+            $data['your-number'] ?? '',
+            //$data['country'] ?? '',
+            $country,
+            $data['your-message'] ?? '',
+            $data['math-captcha'] ?? ''
+        ]);
+    }
+
+    fclose($fp);
+
+    // EMAIL CONTENT
+    $subject = "Monthly Sales Report ({$from} to {$to})";
+
+    $body .= "<p>Dear Admin,</p>";
+    $body .= "<p>Please find attached the CSV export of CFDB7 form submissions for the period <strong>{$from}</strong> to <strong>{$to}</strong>.</p>";
+
+    $headers = [
+        'Content-Type: text/html; charset=UTF-8',
+        'From: <' . $admin_email . '>'
+    ];
+
+    // SEND EMAIL
+    $sent = wp_mail(
+        $admin_email,
+        $subject,
+        $body,
+        $headers,
+        [$file_path]
+    );
+
+    if ($sent) {
+        error_log("CFDB7 CSV sent successfully to {$admin_email}");
+    } else {
+        error_log("CFDB7 CSV failed to send to {$admin_email}");
+    }
+}
+
+if (!wp_next_scheduled('cfdb7_monthly_csv_event')) {
+	$timestamp = strtotime('first day of next month 00:00');
+	error_log('Scheduling cron event now');
+    //wp_schedule_event(time(), 'monthly', 'cfdb7_monthly_csv_event');
+//     wp_schedule_single_event($timestamp, 'monthly', 'cfdb7_monthly_csv_event');
+	wp_schedule_event($timestamp, 'monthly', 'cfdb7_monthly_csv_event');
+}
+
+// Scheduled monthly email
+add_action('cfdb7_monthly_csv_event', 'cfdb7_send_csv');
+
+// Calendaly Cron
+
+function calendly_send_csv($from = null, $to = null) {
+
+    $admin_email = get_option('admin_email');
+    $api_token   = 'eyJraWQiOiIxY2UxZTEzNjE3ZGNmNzY2YjNjZWJjY2Y4ZGM1YmFmYThhNjVlNjg0MDIzZjdjMzJiZTgzNDliMjM4MDEzNWI0IiwidHlwIjoiUEFUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJodHRwczovL2F1dGguY2FsZW5kbHkuY29tIiwiaWF0IjoxNzY2NTg2NDMwLCJqdGkiOiJiNjdhZTI3MS00ODlmLTQ2NzctYjY1MC0yOThlZDY3ZGZhZWYiLCJ1c2VyX3V1aWQiOiJjMzMxNTVkNC1hMWE5LTRkMDQtYjZjYy0wMDE3NWQ2MDZmN2QifQ.zz6mf10J7mIeR8CxpKJeL9_3QhlL_7A6O9OK7mJYoeHd_ocUVs6oHAGwk0nyXXyLrNWZGSt05uTRB8letdUBxQ';
+    $organization = 'https://api.calendly.com/organizations/b48d5db8-6932-4644-a352-47d5ef0bd5a1';
+
+    // AUTO DATE RANGE: Previous Month
+    $from = date('Y-m-01', strtotime('first day of last month'));
+    $to   = date('Y-m-t', strtotime('last day of last month'));
+
+    // STEP 1: Get scheduled events
+    $events_url = add_query_arg([
+        'organization'   => $organization,
+        'min_start_time' => "{$from}T00:00:00Z",
+        'max_start_time' => "{$to}T23:59:59Z",
+    ], 'https://api.calendly.com/scheduled_events');
+
+    $events_response = wp_remote_get($events_url, [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $api_token,
+        ],
+    ]);
+
+    if (is_wp_error($events_response)) return;
+
+    $events = json_decode(wp_remote_retrieve_body($events_response), true);
+    if (empty($events['collection'])) return;
+
+    // Create CSV
+    $upload_dir = wp_upload_dir();
+    $file_path = $upload_dir['basedir'] . "/calendly_{$from}_to_{$to}.csv";
+    $fp = fopen($file_path, 'w');
+
+    fputcsv($fp, [
+        'Event Name',
+        'Event Start Date',
+        'Invitee Name',
+        'Invitee Email',
+        'Please share anything that will help prepare for our meeting.'
+    ]);
+
+    foreach ($events['collection'] as $event) {
+
+        /* STEP 3: Get Invitees */
+        $invitees_res = wp_remote_get($event['uri'] . '/invitees', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $api_token,
+            ],
+        ]);
+
+        if (is_wp_error($invitees_res)) continue;
+
+        $invitees = json_decode(wp_remote_retrieve_body($invitees_res), true);
+
+        foreach ($invitees['collection'] as $invitee) {
+
+            $notes = '';
+
+            if (!empty($invitee['questions_and_answers'])) {
+                foreach ($invitee['questions_and_answers'] as $qa) {
+
+                    if (
+                        stripos(
+                            $qa['question'],
+                            'help prepare for our meeting'
+                        ) !== false
+                    ) {
+                        $notes = $qa['answer'];
+                        break;
+                    }
+                }
+            }
+
+            fputcsv($fp, [
+                $event['name'] ?? '',
+                $event['start_time'] ?? '',
+                $invitee['name'] ?? '',
+                $invitee['email'] ?? '',
+                $notes,
+            ]);
+        }
+    }
+
+    fclose($fp);
+
+    // Email CSV
+    $subject = "Calendly Monthly Bookings Report ({$from} to {$to})";
+    $body = "<p>Dear Admin,</p>
+             <p>Please find attached Calendly bookings monthly report from <strong>{$from}</strong> to <strong>{$to}</strong>.</p>";
+
+    wp_mail(
+        $admin_email,
+        $subject,
+        $body,
+        ['Content-Type: text/html; charset=UTF-8'],
+        [$file_path]
+    );
+}
+
+
+if (!wp_next_scheduled('calendly_monthly_report')) {
+	$timestamp = strtotime('first day of next month 00:00');
+   //wp_schedule_event(time(), 'monthly', 'calendly_monthly_report');
+//     wp_schedule_single_event($timestamp, 'monthly', 'calendly_monthly_report');
+	wp_schedule_event($timestamp, 'monthly', 'calendly_monthly_report');
+}
+
+add_action('calendly_monthly_report', 'calendly_send_csv');
+
+/**
+ * Improve LCP for custom logo
+ */
+add_filter('get_custom_logo', function ($html) {
+
+    // Add fetchpriority="high"
+    $html = str_replace(
+        '<img',
+        '<img fetchpriority="high" loading="lazy"',
+        $html
+    );
+
+    return $html;
+});
+/**
+ * Preload LCP logo
+ */
+/**
+ * Preload LCP Logo
+ */
+add_action('wp_head', function () {
+
+    $logo_id = get_theme_mod('custom_logo');
+    if (!$logo_id) {
+        return;
+    }
+
+    $logo_url  = wp_get_attachment_url($logo_id);
+    $logo_type = get_post_mime_type($logo_id);
+
+    if (!$logo_url || !$logo_type) {
+        return;
+    }
+    ?>
+    <link rel="preload"
+          href="<?php echo esc_url($logo_url); ?>"
+          as="image"
+          type="<?php echo esc_attr($logo_type); ?>"
+          loading="lazy">
+<link rel="preload"
+      href="<?php echo get_template_directory_uri(); ?>/fonts/webfonts/slick.woff"
+      as="font"
+      type="font/woff"
+      crossorigin>
+
+    <?php
+    echo '<style>html { font-display: swap; }</style>';
+});
+
+add_action('wp_ajax_load_more_blogs', 'load_more_blogs');
+add_action('wp_ajax_nopriv_load_more_blogs', 'load_more_blogs');
+
+function load_more_blogs() {
+
+    $paged = isset($_POST['page']) ? intval($_POST['page']) : 1;
+    $animation_blog_delay;
+
+    $args = [
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'posts_per_page' => 12,
+        'paged'          => $paged,
+        'order'          => 'DESC',
+    ];
+
+    $query = new WP_Query($args);
+
+    if ($query->have_posts()) :
+        while ($query->have_posts()) : $query->the_post(); ?>
+
+            <div class="our-blog col-lg-4 col-sm-6"
+                 data-aos="fade-up"
+                 data-aos-delay="<?php echo $animation_blog_delay; ?>"
+                 data-aos-duration="1000">
+
+                <?php $animation_blog_delay += 200; ?>
+
+                <div class="content-wrap">
+                    <a href="<?php the_permalink(); ?>" class="img-link">
+
+                        <div class="images-contener">
+                            <div class="imgs">
+                                <?php if (has_post_thumbnail()) :
+                                    the_post_thumbnail('medium_large', [
+                                        'loading'  => 'lazy',
+                                        'decoding' => 'async'
+                                    ]);
+                                else : ?>
+                                    <img src="<?php echo get_template_directory_uri(); ?>/images/default-image.png" alt="">
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="meta">
+                                <span class="date"><?php echo get_the_date('F d, Y'); ?></span>
+                            </div>
+                        </div>
+
+                        <div class="content">
+                            <h6 class="title"><?php the_title(); ?></h6>
+                            <div class="short-desc"><?php the_excerpt(); ?></div>
+                            <div class="buttons">
+                                <span class="btn-readmore">Read More</span>
+                            </div>
+                        </div>
+
+                    </a>
+                </div>
+            </div>
+
+        <?php endwhile;
+    endif;
+
+    wp_reset_postdata();
+    wp_die();
+}
+
+function add_acf_body_class($classes) {
+    $custom_classes = get_field('body_custom_class');
+
+    if (!empty($custom_classes) && is_array($custom_classes)) {
+        foreach ($custom_classes as $class) {
+            $classes[] = sanitize_html_class($class);
+        }
+    }
+
+    return $classes;
+}
+add_filter('body_class', 'add_acf_body_class');
+
+
+

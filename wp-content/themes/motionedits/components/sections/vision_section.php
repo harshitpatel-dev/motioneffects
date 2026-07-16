@@ -5,12 +5,15 @@
     $vision_cards = get_sub_field( 'vision_cards' );
     $bg_color  = get_sub_field( 'bg_color' );
     $custom_class  = get_sub_field( 'custom_class' );
+    // animation delay counter (ms)
+    $animation_delay = 0;
 ?>
 <section class="vision_columWrap <?php echo esc_attr($custom_class); ?>" style="background-color: <?php echo $bg_color ?>;">
 	<div class="motion-container">
 		<div class="vision-inner_wrapper">
             <?php if( in_array('Title',$show_elements)) : ?>
-                <div class="column-sub-desc-main-title pb-0">
+                <div class="column-sub-desc-main-title pb-0" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                    <?php $animation_delay += 200; ?>
                     <div class="row">
                         <div class="column-main-title <?php if(in_array('Description',$show_elements)): ?>description<?php endif; ?>">
                             <?php  if( in_array('Title',$show_elements)) : ?>
@@ -35,12 +38,13 @@
                     <!-- SCROLLABLE WRAPPER -->
                     <div class="vision-scroll">
                         <?php foreach ($vision_cards as $vision_card): ?>
-                            <div class="vision-card">
+                            <div class="vision-card" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                                <?php $animation_delay += 100; ?>
                                 <div class="vision-card-inner">
 
                                     <?php if(!empty($vision_card['icon'])): ?>
                                         <div class="vision-icon">
-                                            <img src="<?php echo $vision_card['icon']; ?>" alt="">
+                                            <img src="<?php echo $vision_card['icon']; ?>" alt="" loading="lazy">
                                         </div>
                                     <?php endif; ?>
 

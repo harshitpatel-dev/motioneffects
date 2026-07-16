@@ -1,0 +1,168 @@
+<?php
+$show_elements = get_sub_field('show_elements');
+$title  = get_sub_field('title');
+$description  = get_sub_field('description');
+$vision_cards = get_sub_field('vision_cards');
+$bg_color  = get_sub_field('bg_color');
+$custom_class  = get_sub_field('custom_class');
+// animation delay counter (ms)
+$animation_delay = 0;
+?>
+<section class="vision_columWrap <?php echo esc_attr($custom_class); ?>" style="background-color: <?php echo $bg_color ?>;">
+    <div class="motion-container">
+        <div class="vision-inner_wrapper">
+            <?php if (in_array('Title', $show_elements)) : ?>
+                <div class="column-sub-desc-main-title pb-0" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                    <?php $animation_delay += 200; ?>
+                    <div class="row">
+                        <div class="column-main-title <?php if (in_array('Description', $show_elements)): ?>description<?php endif; ?>">
+                            <?php if (in_array('Title', $show_elements)) : ?>
+                                <h3 class="title"><?php echo $title; ?></h3>
+                            <?php endif; ?>
+
+                            <?php if (in_array('Description', $show_elements)) : ?>
+                                <div class="desc">
+                                    <p><?php echo $description; ?></p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+            <?php if (get_sub_field('columns')): ?>
+                <div class="custom-grid service-grid custom-grid-slider">
+                    <?php
+                    $columns = get_sub_field('columns'); // Get the columns repeater field
+                    // Loop through columns
+                    foreach ($columns as $column) :
+                        $custom_class = $column['custom_class'];
+                        $span_class = is_array($column['span_class'])
+                            ? implode(' ', $column['span_class'])
+                            : $column['span_class'];
+                        $items = $column['items'];
+                    ?>
+                        <?php if ($items): ?>
+                            <div class="card <?php echo esc_attr($custom_class); ?> <?php echo esc_attr($span_class); ?>" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                                <?php $animation_delay = 300; ?>
+                                <?php foreach ($items as $item) :
+                                    $type = $item['type'];
+                                    $title = $item['title'];
+                                    $text = $item['text'];
+                                    $icon = $item['icon'];
+                                    $buttons = $item['buttons'];
+
+                                ?>
+                                    <?php if ($type === "Title") : ?>
+                                        <div class="sub-text">
+                                            <?php if ($title) : ?>
+                                                <h3><?php echo $title; ?></h3>
+                                            <?php endif; ?>
+                                        <?php elseif ($type === "Text") : ?>
+                                            <?php if ($text) : ?>
+                                                <p class="text"><?php echo $text; ?></p>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php elseif ($type === "Icon") : ?>
+                                        <div class="icon">
+                                            <?php if ($icon) : ?>
+                                                <img src="<?php echo esc_url($icon); ?>" alt="" loading="lazy">
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php elseif ($type === "Buttons") : ?>
+                                        <div class="buttons">
+                                            <?php
+                                            $button = $buttons[0];
+                                            $button_url = $button['button_url'];
+                                            $button_name = $button['button_name'];
+                                            $btn_class = $button['btn_class'];
+                                            ?>
+                                            <a href="<?php echo $button_url; ?>" class="btn <?php echo $btn_class; ?>">
+                                                <?php echo $button_name; ?>
+                                            </a>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </div>
+                    <?php endif;
+                    endforeach; ?>
+                </div>
+            <?php else: ?>
+                <?php // No rows found 
+                ?>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+<script>
+jQuery(document).ready(function ($) {
+
+    var $slider = $('.custom-grid-slider');
+
+    function initToolsMobileSlider() {
+
+        if (window.innerWidth <= 767) {
+
+            $slider.removeClass('custom-grid');
+
+            if (!$slider.hasClass('slick-initialized')) {
+
+                $slider.slick({
+                    slidesToShow: 2,
+                    slidesToScroll: 1,
+                    dots: true,
+                    arrows: true,
+                    infinite: false,
+                    speed: 800,
+                    adaptiveHeight: false,
+                    responsive: [
+                        {
+                            breakpoint: 576,
+                            settings: {
+                                slidesToShow: 1,
+                                slidesToScroll: 1,
+                            }
+                        }
+                    ]
+                });
+
+                // Equalize after init and on resize/swipe
+                $slider.on('setPosition equalize', function () {
+                    equalizeCardHeights($(this));
+                });
+
+                // Initial run
+                equalizeCardHeights($slider);
+            }
+
+        } else {
+
+            if ($slider.hasClass('slick-initialized')) {
+                $slider.slick('unslick');
+                resetCardHeights();
+            }
+        }
+    }
+
+    function equalizeCardHeights(slider) {
+        let maxHeight = 0;
+        const $cards = slider.find('.slick-slide.slick-active .card');
+
+        $cards.css('height', 'auto');
+
+        $cards.each(function () {
+            maxHeight = Math.max(maxHeight, $(this).outerHeight());
+        });
+
+        $cards.css('height', maxHeight + 'px');
+    }
+
+    function resetCardHeights() {
+        $('.custom-grid-slider .card').css('height', 'auto');
+    }
+
+    initToolsMobileSlider();
+    $(window).on('resize orientationchange', initToolsMobileSlider);
+
+});
+</script>

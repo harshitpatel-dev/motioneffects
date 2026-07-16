@@ -40,7 +40,7 @@
                         <div class="poster-card col-md-4 col-lg-4">
                             <?php if(!empty($image_url)): ?>
                                 <div class="image-wrapper">
-                                    <img src="<?php echo $image_url; ?>" alt="<?php echo $alt_title; ?>" />
+                                    <img src="<?php echo $image_url; ?>" alt="<?php echo $alt_title; ?>" fetchpriority="high" loading="lazy" />
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -58,12 +58,14 @@
     jQuery(document).ready(function() {
 
         jQuery('.poster-slider').slick({
+			infinite: false,
             slidesToShow: 4,
             slidesToScroll: 1,
             dots: false,
             arrows: false,
             autoplay: true,
             autoplaySpeed: 2000,
+			adaptiveHeight: false,
             responsive: [
                 {
                     breakpoint: 1199,
@@ -77,6 +79,8 @@
                     settings: {
                         slidesToShow: 3,
                         slidesToScroll: 1,
+						dots: true,
+                        arrows: true,
                     }
                 },
                 {
@@ -84,6 +88,8 @@
                     settings: {
                         slidesToShow: 2,
                         slidesToScroll: 1,
+						dots: true,
+                        arrows: true,
                     }
                 }
             ]

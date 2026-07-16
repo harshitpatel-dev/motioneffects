@@ -1,4 +1,5 @@
 <?php
+	$show_elements = get_sub_field('show_elements');
 	$heroTitle = get_sub_field('title');
 	$herosub_title = get_sub_field('sub_title');
 	$heroDesp = get_sub_field('description');
@@ -13,26 +14,27 @@
 		<div class="motion-container">
 			<div class="heroBanner__innrer">
 					
-				<?php if($heroTitle):?>
+				<?php if(in_array('Title', $show_elements) && $heroTitle):?>
 					<div class="heroBanner__content">
-						<?php if($herosub_title):?>
-							<div class="heroBanner__content-subtitle">
+						<?php if(in_array('Sub Title', $show_elements) && $herosub_title):?>
+							<div class="heroBanner__content-subtitle" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1000">
 								<span><?php echo $herosub_title; ?></span>
 							</div>
 						<?php endif; ?>
-						<h1 class="heroBanner__content-title" style="display: none;">
+<!-- 			 style="display: none;"			 -->
+						<h1 class="heroBanner__content-title">
 							<?php echo $heroTitle; ?>
 						</h1>
-						<h2 class="heroBanner__content-title">
+<!-- 						<h2 class="heroBanner__content-title" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
 							<?php echo $heroTitle; ?>
-						</h2>
-						<?php if($heroDesp):?>
-							<div class="heroBanner__content-description">
+						</h2> -->
+						<?php if(in_array('Description', $show_elements) && $heroDesp):?>
+							<div class="heroBanner__content-description" data-aos="fade-up" data-aos-delay="300" data-aos-duration="1000">
 								<?php echo $heroDesp; ?>
 							</div>
 						<?php endif; ?>
 						<?php if (have_rows('buttons')) : ?>
-							<div class="buttons">
+							<div class="buttons" data-aos="fade-up" data-aos-delay="400" data-aos-duration="1000">
 								<div class="button-contener">
 									<?php while (have_rows('buttons')) :  the_row();
 										$button_link = get_sub_field('link');
@@ -49,22 +51,22 @@
 					</div>
 				<?php endif; ?>	
 
-				<?php if($show_options == 'Trusted By' && !empty($trusted_by)): ?>
+				<?php if($show_options == 'Trusted By' && is_array($trusted_by) && count(array_filter($trusted_by)) > 0): ?>
 					<?php 
 						$trusted_title = $trusted_by['title'];
 						$trusted_items = $trusted_by['items'];
 						$bgColor = $trusted_by['bg_color'];
 					?>
-					<div class="heroBanner__trustedBy heroBanner_commanEffect" style="background-color: <?php echo $bgColor; ?>;">
+					<div class="heroBanner__trustedBy heroBanner_commanEffect" style="background-color: <?php echo $bgColor; ?>;" data-aos="fade-up" data-aos-delay="500" data-aos-duration="1000">
 						<div class="heroBanner__trustedBy-inner">
 							<?php if ($trusted_title): ?>
 								<div class="heroBanner__trustedBy-title_dublicate">
 									<div class="heroBanner__trustedBy-titleWrap ">
 										<?php for ($i = 0; $i < 2; $i++): ?>
 											<div class="heroBanner__trustedBy-title desktop">
-												<img src="<?php echo get_template_directory_uri(); ?>/images/star-icon.svg" alt="Star Icon">
+												<img src="<?php echo get_template_directory_uri(); ?>/images/star-icon.svg" alt="Star Icon" loading="lagy">
 												<span><?php echo esc_html($trusted_title); ?></span>
-												<img src="<?php echo get_template_directory_uri(); ?>/images/star-icon.svg" alt="Star Icon">
+												<img src="<?php echo get_template_directory_uri(); ?>/images/star-icon.svg" alt="Star Icon" loading="lagy">
 											</div>
 										
 											<!-- Mobile only stars -->
@@ -83,10 +85,22 @@
 							<?php if($trusted_items): ?>
 							<!-- <div class="motion-container"> -->
 								<div class="heroBanner__trustedBy-slider">
-									<?php foreach($trusted_items as $trusted_item): ?>
+									<?php foreach($trusted_items as $trusted_item): 
+									    $image = $trusted_item['image'];
+										$is_svg = pathinfo($image['url'], PATHINFO_EXTENSION) === 'svg';
+									?>
 									<div class="heroBanner__trustedBy-item">
 										<div class="img-wrapper">
-											<img src="<?php echo $trusted_item['image']['url']; ?>" alt="<?php echo esc_attr($trusted_item['image']['alt']); ?>">
+<!-- 											<img src="<?php echo $trusted_item['image']['url']; ?>" alt="<?php echo esc_attr($trusted_item['image']['alt']); ?>" loading="eager"> -->
+											<img
+        src="<?php echo esc_url($image['url']); ?>"
+        alt="<?php echo esc_attr($image['alt'] ?: 'Trusted logo'); ?>"
+        <?php if (!$is_svg): ?>
+            width="<?php echo esc_attr($image['width']); ?>"
+            height="<?php echo esc_attr($image['height']); ?>"
+        <?php endif; ?>
+        loading="lazy"
+    >
 										</div>
 									</div>
 									<?php endforeach; ?>
@@ -96,12 +110,13 @@
 						</div>
 					</div>
 				
-				<?php elseif($show_options == 'About Company' && !empty($about_company)): ?>
+				<?php elseif($show_options == 'About Company' && is_array($about_company) && count(array_filter($about_company)) > 0): ?>
 					<?php 
 						$company_items = $about_company['items'];
 						$bgColor = $about_company['bg_color'];
 					?>
-					<div class="heroBanner__about heroBanner_commanEffect" style="background-color: <?php echo $bgColor; ?>;">
+				<div class="d-none"><?php print_r($about_company); ?></div>
+					<div class="heroBanner__about heroBanner_commanEffect" style="background-color: <?php echo $bgColor; ?>;" data-aos="fade-up" data-aos-delay="500" data-aos-duration="1000">
 						<div class="heroBanner__about-inner">
 							
 							<?php if($company_items): ?>

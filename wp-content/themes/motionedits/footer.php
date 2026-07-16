@@ -14,7 +14,7 @@
 		<div class="footer-top">
 			<div class="motion-container">
 				<div class="row">
-					<div class="footerlogo-contactdetail col-xl-5 col-md-6">
+					<div class="footerlogo-contactdetail col-xl-7 col-md-6">
 						<div class="footerlogoWrap">
 							<?php $logo = get_field( 'logo', 'option' ); ?>
 							<?php if ( $logo ) : ?>
@@ -93,7 +93,7 @@
 							</ul>
 						<?php endif; ?>
 					</div>
-					<div class="col-xl-7 col-md-6">
+					<div class="add-menu-wrap col-xl-5 col-md-6">
 						<div class="row">
 							<div class="col-md-12 col-lg-12">
 								<?php if ( have_rows( 'add_menu', 'option' ) ) : ?>
