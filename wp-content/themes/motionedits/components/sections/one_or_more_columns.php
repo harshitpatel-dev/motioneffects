@@ -8,9 +8,6 @@ $description = get_sub_field('description');
 
 // Simple animation delay counter (ms)
 $animation_delay = 0;
-
-// custom modal
-$custom_video_modal = false;
 ?>
 <section class="two-column-content motion-wrap <?php echo $custom_class; ?>" <?= !empty($section_id) ? 'id="' . htmlspecialchars($section_id) . '"' : '' ?> style="background-color: <?php echo $section_bg_color ?>;">
     <div class="motion-container">
@@ -98,133 +95,53 @@ $custom_video_modal = false;
                                                         $video_file = $video['video_file'];
                                                         $video_link = $video['video_link'];
                                                         $thumbnail  = $video['video_thumbnail'];
-                                                        $custom_video_modal = true;
+
+                                                        // Build the embed URL for linked videos (YouTube / Vimeo).
+                                                        // Autoplay requires the video to be muted, so we mute it.
+                                                        $embed_url = '';
+                                                        if ($video_type === 'Link' && $video_link) {
+                                                            $is_youtube = false;
+                                                            if (strpos($video_link, 'youtube.com/watch') !== false) {
+                                                                $embed_url = str_replace('watch?v=', 'embed/', $video_link);
+                                                                $is_youtube = true;
+                                                            } elseif (strpos($video_link, 'youtu.be/') !== false) {
+                                                                $embed_url = str_replace('youtu.be/', 'youtube.com/embed/', $video_link);
+                                                                $is_youtube = true;
+                                                            } elseif (strpos($video_link, 'vimeo.com') !== false && strpos($video_link, 'player.vimeo.com') === false) {
+                                                                $embed_url = str_replace('vimeo.com/', 'player.vimeo.com/video/', $video_link);
+                                                            } else {
+                                                                $embed_url = $video_link;
+                                                                $is_youtube = strpos($video_link, 'youtube') !== false;
+                                                            }
+
+                                                            // YouTube uses `mute=1`, Vimeo uses `muted=1`
+                                                            $autoplay_params = $is_youtube ? 'autoplay=1&mute=1&playsinline=1' : 'autoplay=1&muted=1&playsinline=1';
+                                                            $embed_url .= (strpos($embed_url, '?') !== false ? '&' : '?') . $autoplay_params;
+                                                        }
                                                     ?>
-                                                     <div class="item h-100" data-aos="fade-up"
-                                                        data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
+                                                     <div class="item" data-aos="fade-up"
+                                                        data-aos-delay="200" data-aos-duration="800">
 
-                                                        <div class="video-block">
-
-                                                            <?php if ($thumbnail): ?>
-                                                                <div class="video-thumb"
-                                                                    data-type="<?php echo esc_attr($video_type); ?>"
-                                                                    data-file="<?php echo esc_url($video_file); ?>"
-                                                                    data-link="<?php echo esc_url($video_link); ?>">
-                                                                    <img src="<?php echo esc_url($thumbnail); ?>" alt="video thumbnail" loading="lazy">
-                                                                    <span class="play-icon"><i class='bx bx-play'></i></span>
+                                                        <div class="video-block mb-2">
+                                                            <?php if ($video_type === 'File' && $video_file): ?>
+                                                                <div class="video-media">
+                                                                    <video controls playsinline autoplay muted preload="auto"
+                                                                        <?php if ($thumbnail): ?>poster="<?php echo esc_url($thumbnail); ?>"<?php endif; ?>>
+                                                                        <source src="<?php echo esc_url($video_file); ?>" type="video/mp4">
+                                                                    </video>
+                                                                </div>
+                                                            <?php elseif ($embed_url): ?>
+                                                                <div class="video-embed">
+                                                                    <iframe src="<?php echo esc_url($embed_url); ?>"
+                                                                        title="Video Player"
+                                                                        loading="lazy"
+                                                                        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                                                                        allowfullscreen></iframe>
                                                                 </div>
                                                             <?php endif; ?>
-
                                                         </div>
                                                     </div>
                                                     <?php $animation_delay += 200; ?>
-
-                                                    <script>
-                                                    jQuery(function ($) {
-
-                                                        const $modal = $('#customVideoModal');
-                                                        const $iframeContainer = $modal.find('.ratio');
-
-                                                        let isModalOpen = false;
-                                                        let isClosing = false;
-
-                                                        /* Create fresh iframe each time */
-                                                        function createFreshIframe(url) {
-                                                            $iframeContainer.find('iframe').remove();
-
-                                                            const $iframe = $('<iframe>', {
-                                                                id: 'custom-video-frame',
-                                                                src: url,
-                                                                title: 'Video Player',
-                                                                allow: 'autoplay; encrypted-media',
-                                                                frameborder: 0,
-                                                                allowfullscreen: true
-                                                            });
-
-                                                            $iframeContainer.prepend($iframe);
-                                                        }
-
-                                                        /* Click on video thumbnail */
-                                                        $(document).on('click', '.video-thumb', function () {
-
-                                                            const type = $(this).data('type');
-                                                            const file = $(this).data('file');
-                                                            const link = $(this).data('link');
-
-                                                            let url = '';
-
-                                                            if (type === 'File' && file) {
-                                                                url = file;
-                                                            }
-
-                                                            if (type === 'Link' && link) {
-
-                                                                // YouTube
-                                                                if (link.includes('youtube.com/watch')) {
-                                                                    url = link.replace('watch?v=', 'embed/') + '?autoplay=1';
-                                                                }
-                                                                else if (link.includes('youtu.be/')) {
-                                                                    url = link.replace('youtu.be/', 'youtube.com/embed/') + '?autoplay=1';
-                                                                }
-                                                                // Vimeo
-                                                                else if (link.includes('vimeo.com') && !link.includes('player.vimeo.com')) {
-                                                                    url = link.replace('vimeo.com/', 'player.vimeo.com/video/') + '?autoplay=1';
-                                                                }
-                                                                else if (link.includes('player.vimeo.com')) {
-                                                                    url = link + (link.includes('?') ? '&' : '?') + 'autoplay=1';
-                                                                }
-                                                            }
-
-                                                            if (!url) return;
-
-                                                            createFreshIframe(url);
-
-                                                            const modalInstance = bootstrap.Modal.getOrCreateInstance($modal[0]);
-                                                            modalInstance.show();
-                                                        });
-
-                                                        /* Modal opened → push history */
-                                                        $modal.on('shown.bs.modal', function () {
-                                                            if (!isModalOpen) {
-                                                                history.pushState({ videoModal: true }, '');
-                                                                isModalOpen = true;
-                                                            }
-                                                            isClosing = false;
-                                                        });
-
-                                                        /* Modal closed → cleanup */
-                                                        $modal.on('hidden.bs.modal', function () {
-
-                                                            const wasOpen = isModalOpen;
-                                                            const closedByBack = isClosing;
-
-                                                            isModalOpen = false;
-                                                            isClosing = false;
-
-                                                            // Kill iframe completely
-                                                            $iframeContainer.find('iframe').attr('src', 'about:blank').remove();
-
-                                                            // If user clicked close button → clean history
-                                                            if (wasOpen && !closedByBack && history.state?.videoModal) {
-                                                                setTimeout(() => history.back(), 10);
-                                                            }
-                                                        });
-
-                                                        /* Browser back button → close modal */
-                                                        window.addEventListener('popstate', function () {
-
-                                                            if (isModalOpen && !isClosing) {
-                                                                isClosing = true;
-
-                                                                const modalInstance = bootstrap.Modal.getInstance($modal[0]);
-                                                                if (modalInstance) {
-                                                                    modalInstance.hide();
-                                                                }
-                                                            }
-                                                        });
-
-                                                    });
-                                                    </script>
 
 
                                                 <?php elseif ($type === "Image" && $image): ?>
@@ -233,14 +150,13 @@ $custom_video_modal = false;
                                                         <div class="item_image">
 
 															<img 
-                src="<?php echo esc_url($image['url']); ?>" 
-                alt="<?php echo esc_attr($image['alt'] ?: ''); ?>" 
-                <?php if (!$is_svg): ?>
-                    width="<?php echo esc_attr($image['width']); ?>" 
-                    height="<?php echo esc_attr($image['height']); ?>"
-                <?php endif; ?>
-                loading="lazy"
-            >
+                                                                src="<?php echo esc_url($image['url']); ?>" 
+                                                                alt="<?php echo esc_attr($image['alt'] ?: ''); ?>" 
+                                                                <?php if (!$is_svg): ?>
+                                                                    width="<?php echo esc_attr($image['width']); ?>" 
+                                                                    height="<?php echo esc_attr($image['height']); ?>"
+                                                                <?php endif; ?>
+                                                                loading="lazy">
                                                         </div>
                                                     </div>
                                                     <?php $animation_delay += 200; ?>
@@ -599,26 +515,6 @@ $custom_video_modal = false;
             <?php endif; ?>
         </div>
     </div>
-	<?php if ($custom_video_modal): ?>
-        <div class="modal fade" id="customVideoModal" tabindex="-1" aria-labelledby="customVideoModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <button type="button" class="btnclose" data-bs-dismiss="modal" aria-label="Close">
-                        <i class='bx bx-x'></i>
-                    </button>
-                    <div class="ratio ratio-16x9">
-                        <iframe id="custom-video-frame"
-                        src=""
-                        title="Custom Video"
-                        allow="autoplay; encrypted-media"
-                        frameborder="0"
-                        allowfullscreen></iframe>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
 </section>
 
 

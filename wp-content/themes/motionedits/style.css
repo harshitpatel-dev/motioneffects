@@ -4038,6 +4038,15 @@ line-height: 48px;text-align: center;color: var(--green-color);padding: 20px 0px
 .two-column-content .multi_columns .multi_columns_content .video_image_content .item .video-block .video-thumb .play-icon .bx-play:before{font-size: 1.8rem;line-height: 1;color: white;display: inline-block;position: relative;left: 2px;bottom: -1px;}
 .two-column-content .multi_columns .multi_columns_content .video_image_content .item .video-block .video-player-container iframe{border-radius: 40px;}
 
+/* Inline video players: keep each video's own aspect ratio, never crop, cap to device height */
+.video-block { --video-max-h: 85vh; }
+/* Uploaded file: browser knows the intrinsic ratio, so let it size itself within both limits */
+.video-block .video-media { text-align: center; }
+.video-block .video-media video {display: block;margin: 0 auto;max-width: 100%;max-height: var(--video-max-h);width: auto;height: auto;object-fit: contain; /* preserve ratio, no crop */border-radius: 10px;}
+/* Embeds (YouTube/Vimeo) have no intrinsic ratio: hold 16:9 but cap by height so it shrinks to fit */
+.video-block .video-embed {position: relative;width: 100%;max-width: calc(var(--video-max-h) * 16 / 9); /* height cap drives the width */margin: 0 auto;aspect-ratio: 16 / 9;border-radius: 10px;overflow: hidden;}
+.video-block .video-embed iframe {position: absolute;inset: 0;width: 100%;height: 100%;border: 0;}
+
 
 /* New Youtube Editing Page Design Css
 -------------------------------------------------------------------------- */
