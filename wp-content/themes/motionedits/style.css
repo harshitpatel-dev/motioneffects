@@ -2986,10 +2986,10 @@ line-height: 48px;text-align: center;color: var(--green-color);padding: 20px 0px
 /* Arrow */
 .our_poster_columWrap .posters-container .posters-content .slick-arrow{background: var(--white-color);border: none;width: 42px;height: 42px;border-radius: 50%;display: flex;align-items: center;justify-content: center;cursor: pointer;border: 2px solid var(--redbrown-color);}
 .our_poster_columWrap.green .posters-container .posters-content .slick-arrow{border: 2px solid var(--green-color);}
-.our_poster_columWrap .posters-container .posters-content .slick-arrow.slick-prev{left: -48px;z-index:50;}
+.our_poster_columWrap .posters-container .posters-content .slick-arrow.slick-prev{left: -20px;z-index:50;}
 .our_poster_columWrap .posters-container .posters-content .slick-arrow.slick-prev::before,
 .our_poster_columWrap .posters-container .posters-content .slick-arrow.slick-next::before{content: "";--slick-btn-size: 24px;width: var(--slick-btn-size); height: var(--slick-btn-size);}
-.our_poster_columWrap .posters-container .posters-content .slick-arrow.slick-next{right: -48px;}
+.our_poster_columWrap .posters-container .posters-content .slick-arrow.slick-next{right: -20px;}
 .our_poster_columWrap .posters-container .posters-content .slick-arrow.slick-prev::before{background: url('./images/left-arrow-slider.svg') center no-repeat;}
 .our_poster_columWrap .posters-container .posters-content .slick-arrow.slick-next::before{background: url('./images/right-arrow-slider.svg') center no-repeat;}
 
@@ -3902,6 +3902,16 @@ line-height: 48px;text-align: center;color: var(--green-color);padding: 20px 0px
 	.thank-you-content ul li:last-child { margin-bottom: 0;}
 }
 
+
+.vfx-card-slider.specialize_columWrap .specialize-container {padding-top: 20px;}
+.vfx-card-slider .hero-card-slider .specialize-content .specialize-card {margin-left: 7px;margin-right: 7px;}
+.vfx-card-slider .hero-card-slider .specialize-content .specialize-card:hover .content-wrapper {transform: none;transition: unset;}
+.vfx-card-slider .hero-card-slider .specialize-content .specialize-card .content-wrapper { padding: 9px 10px; transition:unset;}
+.vfx-card-slider .hero-card-slider .specialize-content .specialize-card .content-wrapper .title h5 { font-size: 1rem;line-height: 20px;}
+.vfx-card-slider .hero-card-slider .specialize-content .specialize-card .content-wrapper .image-wrapper { width: 42px;height: 42px;}
+.vfx-slider {visibility: hidden;opacity: 0;height:0;}
+.vfx-slider.slick-initialized {visibility: visible;opacity: 1; height: auto;}
+
 /* Footer Css
 ------------------------------------------------------------------------------------------------ */
 .site-footer { background: var(--redbrown-color);}
@@ -4038,15 +4048,58 @@ line-height: 48px;text-align: center;color: var(--green-color);padding: 20px 0px
 .two-column-content .multi_columns .multi_columns_content .video_image_content .item .video-block .video-thumb .play-icon .bx-play:before{font-size: 1.8rem;line-height: 1;color: white;display: inline-block;position: relative;left: 2px;bottom: -1px;}
 .two-column-content .multi_columns .multi_columns_content .video_image_content .item .video-block .video-player-container iframe{border-radius: 40px;}
 
-/* Inline video players: keep each video's own aspect ratio, never crop, cap to device height */
-.video-block { --video-max-h: 85vh; }
+/* Inline click-to-play video players: own aspect ratio, no crop, capped to device height */
+.video-block { --video-max-h: 85vh; --video-radius: 10px; text-align: center;}
+.video-block .video-player {position: relative;margin: 0 auto;border-radius: var(--video-radius);overflow: hidden;background: #000;}
 /* Uploaded file: browser knows the intrinsic ratio, so let it size itself within both limits */
-.video-block .video-media { text-align: center; }
-.video-block .video-media video {display: block;margin: 0 auto;max-width: 100%;max-height: var(--video-max-h);width: auto;height: auto;object-fit: contain; /* preserve ratio, no crop */border-radius: 10px;}
+.video-block .video-player--file {display: inline-block;line-height: 0;max-width: 100%;}
+.video-block .video-player--file video {display: block;max-width: 100%;max-height: var(--video-max-h);width: auto;height: auto;object-fit: contain; /* preserve ratio, no crop */}
 /* Embeds (YouTube/Vimeo) have no intrinsic ratio: hold 16:9 but cap by height so it shrinks to fit */
-.video-block .video-embed {position: relative;width: 100%;max-width: calc(var(--video-max-h) * 16 / 9); /* height cap drives the width */margin: 0 auto;aspect-ratio: 16 / 9;border-radius: 10px;overflow: hidden;}
-.video-block .video-embed iframe {position: absolute;inset: 0;width: 100%;height: 100%;border: 0;}
+.video-block .video-player--youtube,
+.video-block .video-player--vimeo,
+.video-block .video-player--embed {width: 100%;max-width: calc(var(--video-max-h) * 16 / 9); /* height cap drives the width */aspect-ratio: 16 / 9;}
+.video-block .video-player__poster {width: 100%;height: 100%;object-fit: cover;display: block;}
+.video-block .video-player iframe {position: absolute;inset: 0;width: 100%;height: 100%;border: 0;}
 
+/* Play button (hidden while playing; returns on pause for uploaded files) */
+.video-block .video-play-btn {position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index: 2;padding: 0;border: 0;background: none;cursor: pointer;line-height: 0;opacity: 1;transition: opacity .25s ease, transform .25s ease;}
+.video-block .video-play-btn__icon {display: block;filter: drop-shadow(0 4px 14px rgba(0,0,0,.35));}
+.video-block .video-play-btn:hover {transform: translate(-50%, -50%) scale(1.08);}
+.video-block .video-play-btn:focus-visible {outline: 3px solid var(--white-color);outline-offset: 6px;border-radius: 12px;}
+.video-block .video-player.is-playing .video-play-btn {opacity: 0;pointer-events: none;}
+/* YouTube: wide red rounded rectangle (YouTube red by default, brightens on hover) */
+.video-block .video-player--youtube .video-play-btn__icon {width: 86px;height: auto;}
+.video-block .video-player--youtube .yt-bg {fill: #f00;fill-opacity: .92;transition: fill-opacity .25s ease;}
+.video-block .video-player--youtube .video-play-btn:hover .yt-bg {fill-opacity: 1;}
+/* Vimeo: rounded square in Vimeo blue with the Vimeo "v" mark */
+/* .video-block .video-player--vimeo .video-play-btn__icon {width: 72px;height: 72px;}
+.video-block .video-player--vimeo .vm-bg {fill: #00adef;fill-opacity: .92;transition: fill-opacity .25s ease;}
+.video-block .video-player--vimeo .video-play-btn:hover .vm-bg {fill-opacity: 1;} */
+.video-block .video-player--vimeo .video-play-btn__icon,
+.video-block .video-player--embed .video-play-btn__icon {width: 72px;height: 72px;}
+.video-block .video-player--vimeo .fl-bg,
+.video-block .video-player--embed .fl-bg {fill: #fff;fill-opacity: .92;transition: fill-opacity .25s ease;}
+.video-block .video-player--vimeo .video-play-btn:hover .fl-bg,
+.video-block .video-player--embed .video-play-btn:hover .fl-bg {fill-opacity: 1;}
+.video-block .video-player--vimeo .fl-tri,
+.video-block .video-player--embed .fl-tri {fill: #111;}
+
+/* Uploaded file / other: solid white circle with a dark triangle */
+.video-block .video-player--file .video-play-btn__icon,
+.video-block .video-player--embed .video-play-btn__icon {width: 72px;height: 72px;}
+.video-block .video-player--file .fl-bg,
+.video-block .video-player--embed .fl-bg {fill: #fff;fill-opacity: .92;transition: fill-opacity .25s ease;}
+.video-block .video-player--file .video-play-btn:hover .fl-bg,
+.video-block .video-player--embed .video-play-btn:hover .fl-bg {fill-opacity: 1;}
+.video-block .video-player--file .fl-tri,
+.video-block .video-player--embed .fl-tri {fill: #111;}
+@media (max-width: 767px) {
+    .video-block .video-play-btn__icon {width: 56px !important;height: 56px !important;}
+    .video-block .video-player--youtube .video-play-btn__icon {width: 64px !important;height: auto !important;}
+}
+@media (prefers-reduced-motion: reduce) {
+    .video-block .video-play-btn, .video-block .video-play-btn:hover {transition: none;transform: translate(-50%, -50%);}
+}
 
 /* New Youtube Editing Page Design Css
 -------------------------------------------------------------------------- */
@@ -4112,6 +4165,7 @@ Hero Lead Form styles
 .hero-lead-form {background: var(--redbrown-color);}
 .hero-lead-form .contact-form-wrapper {opacity: 0;}
 body.page-loaded .hero-lead-form .contact-form-wrapper {opacity: 1;}
+.hero-lead-form.vfx-page .buttons br{display:none;}
 
 /* --- Left text area --- */
 .hero-lead-form .hero-left { padding: 40px 20px; }
@@ -4148,6 +4202,7 @@ body.page-loaded .hero-lead-form .contact-form-wrapper {opacity: 1;}
 .hero-lead-form .lead-form-card .desc { font-size: clamp(0.875rem, 1.2vw, 1.125rem); line-height: 1.5; padding-bottom: 0; color: #8B7D74; }
 .hero-lead-form .lead-form-card .input-wrapper p { padding-bottom: 12px; }
 .hero-lead-form .input-wrapper span.wpcf7-quiz-label{color:rgba(var(--redbrown-color-rgb), 1);}
+.remove-channellink-banner .main-channellink { display: none;}
 
 /* --- Form inputs --- */
 .hero-lead-form .lead-form-card .wpcf7-form input[type="text"],

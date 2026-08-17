@@ -1,25 +1,25 @@
-jQuery(document).ready(function($) {
-	$(function () {
-	  AOS.init({
-		once: true,
-		duration: 500,
-		offset: 120,
-		easing: 'ease-out-cubic',
-		mirror: false,
-		disableMutationObserver: true,
-		disable: function () {
-		  return window.innerWidth < 767;
-		}
-	  });
-		
-		document.body.classList.add("aos-initialized");
-        setTimeout(function(){
+jQuery(document).ready(function ($) {
+    $(function () {
+        AOS.init({
+            once: true,
+            duration: 500,
+            offset: 120,
+            easing: 'ease-out-cubic',
+            mirror: false,
+            disableMutationObserver: true,
+            disable: function () {
+                return window.innerWidth < 767;
+            }
+        });
+
+        document.body.classList.add("aos-initialized");
+        setTimeout(function () {
             AOS.refresh();
         }, 500);
-	});
-	
+    });
+
     // Fixed Header
-    jQuery(window).scroll(function() {
+    jQuery(window).scroll(function () {
         var scroll = jQuery(window).scrollTop();
         if (scroll >= 45) {
             jQuery('.site-header').addClass("fixed-header");
@@ -29,7 +29,7 @@ jQuery(document).ready(function($) {
     });
 
     // Fixed Footer
-    jQuery('.footer-menu').on('click', 'h5', function(){
+    jQuery('.footer-menu').on('click', 'h5', function () {
         jQuery(this).parent().toggleClass('active');
     });
 
@@ -43,34 +43,34 @@ jQuery(document).ready(function($) {
             autoplay: true,
             autoplaySpeed: 0,
             speed: 5000,
-            slidesToShow:5,
-            slidesToScroll:1,
+            slidesToShow: 5,
+            slidesToScroll: 1,
             cssEase: 'linear',
             draggable: false,
             pauseOnHover: false,
             pauseOnFocus: false,
-			adaptiveHeight: false,
+            adaptiveHeight: false,
             responsive: [
                 {
-                breakpoint: 1280,
-                settings: {
-                    slidesToShow: 4,
-                    slidesToScroll: 1
-                }
+                    breakpoint: 1280,
+                    settings: {
+                        slidesToShow: 4,
+                        slidesToScroll: 1
+                    }
                 },
                 {
-                breakpoint: 767,
-                settings: {
-                    slidesToShow: 3,
-                    slidesToScroll: 1
-                }
+                    breakpoint: 767,
+                    settings: {
+                        slidesToShow: 3,
+                        slidesToScroll: 1
+                    }
                 },
                 {
-                breakpoint: 576,
-                settings: {
-                    slidesToShow: 3,
-                    slidesToScroll: 1
-                }
+                    breakpoint: 576,
+                    settings: {
+                        slidesToShow: 3,
+                        slidesToScroll: 1
+                    }
                 }
             ]
         });
@@ -84,61 +84,99 @@ jQuery(document).ready(function($) {
         autoplay: true,
         autoplaySpeed: 0,
         speed: 5000,
-        slidesToShow:4,
-        slidesToScroll:1,
+        slidesToShow: 4,
+        slidesToScroll: 1,
         cssEase: 'linear',
         draggable: false,
         pauseOnHover: false,
         pauseOnFocus: false,
-		adaptiveHeight: false,
+        adaptiveHeight: false,
         responsive: [
             {
-              breakpoint: 767,
-              settings: {
-                slidesToShow: 3,
-                slidesToScroll: 1
-              }
+                breakpoint: 767,
+                settings: {
+                    slidesToShow: 3,
+                    slidesToScroll: 1
+                }
             },
             {
-              breakpoint: 576,
-              settings: {
-                slidesToShow: 2,
-                slidesToScroll: 1
-              }
+                breakpoint: 576,
+                settings: {
+                    slidesToShow: 2,
+                    slidesToScroll: 1
+                }
             },
             {
-              breakpoint: 420,
-              settings: {
-                slidesToShow: 2,
-                slidesToScroll: 1
-              }
+                breakpoint: 420,
+                settings: {
+                    slidesToShow: 2,
+                    slidesToScroll: 1
+                }
             }
         ]
     });
-
+    jQuery('.vfx-slider').slick({
+        infinite: true,
+        dots: false,
+        arrows: false,
+        autoStart: true,
+        autoplay: true,
+        autoplaySpeed: 2000,
+        speed: 900,
+        slidesToShow: 3,
+        slidesToScroll: 1,
+        cssEase: 'linear',
+        draggable: true,
+        pauseOnHover: true,
+        pauseOnFocus: false,
+        adaptiveHeight: false,
+        responsive: [
+            {
+                breakpoint: 767,
+                settings: {
+                    slidesToShow: 3,
+                    slidesToScroll: 1
+                }
+            },
+            {
+                breakpoint: 576,
+                settings: {
+                    slidesToShow: 2,
+                    slidesToScroll: 1
+                }
+            },
+            {
+                breakpoint: 380,
+                settings: {
+                    slidesToShow: 1,
+                    slidesToScroll: 1
+                }
+            }
+        ]
+    });
     // Equalize visible slide heights
     function equalizeVisibleHeights(slider) {
-      const $slides = slider.find('.slick-slide');
-      let maxHeight = 0;
+        const $slides = slider.find('.slick-slide');
+        let maxHeight = 0;
 
-      $slides.css('height', 'auto');
+        $slides.css('height', 'auto');
 
-      slider.find('.slick-slide.slick-active').each(function () {
-        const h = jQuery(this).outerHeight();
-        if (h > maxHeight) maxHeight = h;
-      });
+        slider.find('.slick-slide.slick-active').each(function () {
+            const h = jQuery(this).outerHeight();
+            if (h > maxHeight) maxHeight = h;
+        });
 
-      slider.find('.slick-slide.slick-active').css('height', maxHeight + 'px');
+        slider.find('.slick-slide.slick-active').css('height', maxHeight + 'px');
     }
 
     // Apply on reposition
     jQuery('.our-blogs-content').on('setPosition', function () {
-      equalizeVisibleHeights(jQuery(this));
+        equalizeVisibleHeights(jQuery(this));
     });
 
-    
+
     jQuery('.packages-slider').on('setPosition', function () {
-      equalizeVisibleHeights(jQuery(this));
+        equalizeVisibleHeights(jQuery(this));
     });
 
 });
@@ -196,17 +234,17 @@ jQuery(document).ready(function ($) {
 
 jQuery(document).ready(function ($) {
 
-    var $slider  = $('.packages-slider');
+    var $slider = $('.packages-slider');
 
     if (!$slider.length) return;
 
     var autoTimer = null;
-    var delay     = 2500; // time between moves
+    var delay = 2500; // time between moves
 
     function toggleDots(slick) {
         var slidesToShow = slick.options.slidesToShow;
-        var slideCount   = slick.slideCount;
-        var $dots        = $(slick.$dots);
+        var slideCount = slick.slideCount;
+        var $dots = $(slick.$dots);
 
         if (!$dots.length) return;
 
@@ -277,15 +315,15 @@ jQuery(document).ready(function ($) {
         dots: true,
         infinite: false,
         autoplay: false,
-//         speed: 500,
-//         cssEase: 'ease',
+        //         speed: 500,
+        //         cssEase: 'ease',
         pauseOnHover: false,
         pauseOnFocus: false,
         draggable: true,
         swipe: true,
         touchMove: true,
         swipeToSlide: false,
-		touchThreshold: 4,
+        touchThreshold: 4,
         speed: 250,
         cssEase: 'cubic-bezier(0.4, 0, 0.2, 1)',
         waitForAnimate: false,
@@ -295,19 +333,58 @@ jQuery(document).ready(function ($) {
         responsive: [
             { breakpoint: 1360, settings: { slidesToShow: 3 } },
             { breakpoint: 1199, settings: { slidesToShow: 3 } },
-            { breakpoint: 991,  settings: { slidesToShow: 2 } },
-            { breakpoint: 576,  settings: { slidesToShow: 1 } }
+            { breakpoint: 991, settings: { slidesToShow: 2 } },
+            { breakpoint: 576, settings: { slidesToShow: 1 } }
         ]
     });
 
 });
 
 window.addEventListener('load', function () {
-  document.querySelectorAll('.gif-swap').forEach(img => {
-    img.src = img.dataset.gif;
-  });
+    document.querySelectorAll('.gif-swap').forEach(img => {
+        img.src = img.dataset.gif;
+    });
 });
 
 window.addEventListener('load', function () {
     document.body.classList.add('page-loaded');
+});
+
+
+/**
+ * CF7 only re-validates a field on blur/submit, so its "not-valid" state and
+ * tooltip stay stuck once shown, even after the user types a correct value
+ * without leaving the field. This only clears that stale error state as the
+ * user types a valid value — it never adds errors itself, so CF7's own
+ * blur/submit validation still fully owns marking fields invalid.
+ */
+document.addEventListener('input', function (e) {
+    var field = e.target;
+    if (!field.classList || !field.classList.contains('wpcf7-not-valid')) return;
+
+    var wrap = field.closest('.wpcf7-form-control-wrap');
+    if (!wrap) return;
+
+    var value = field.value.trim();
+    var valid = false;
+
+    if (field.classList.contains('wpcf7-validates-as-email')) {
+        valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    } else if (field.classList.contains('wpcf7-validates-as-tel')) {
+        valid = /^[0-9()+\-.\s]+$/.test(value) && value.replace(/\D/g, '').length >= 7;
+    } else if (field.classList.contains('wpcf7-validates-as-required')) {
+        valid = value.length > 0;
+    } else {
+        return;
+    }
+
+    if (!valid) return;
+
+    field.classList.remove('wpcf7-not-valid');
+    field.setAttribute('aria-invalid', 'false');
+
+    var tip = wrap.querySelector('.wpcf7-not-valid-tip');
+    if (tip) {
+        tip.style.display = 'none';
+    }
 });

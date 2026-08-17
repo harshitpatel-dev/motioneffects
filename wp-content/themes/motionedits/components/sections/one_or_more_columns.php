@@ -8,6 +8,9 @@ $description = get_sub_field('description');
 
 // Simple animation delay counter (ms)
 $animation_delay = 0;
+
+// Set to true by the Grid item when a mobile-only slider is needed
+$mobile_slider_column = false;
 ?>
 <section class="two-column-content motion-wrap <?php echo $custom_class; ?>" <?= !empty($section_id) ? 'id="' . htmlspecialchars($section_id) . '"' : '' ?> style="background-color: <?php echo $section_bg_color ?>;">
     <div class="motion-container">
@@ -73,7 +76,7 @@ $animation_delay = 0;
                                                 $process_steps = $item['process_steps'];
                                                 $calendly = $item['calendly'];
 											
-											$is_svg = pathinfo($image['url'], PATHINFO_EXTENSION) === 'svg';
+											$is_svg = !empty($image['url']) && pathinfo($image['url'], PATHINFO_EXTENSION) === 'svg';
                                                 ?>
 
                                                 <?php if ($type === "Sub Title" && $sub_title): ?>
@@ -96,47 +99,78 @@ $animation_delay = 0;
                                                         $video_link = $video['video_link'];
                                                         $thumbnail  = $video['video_thumbnail'];
 
-                                                        // Build the embed URL for linked videos (YouTube / Vimeo).
-                                                        // Autoplay requires the video to be muted, so we mute it.
+                                                        // Work out which player we're dealing with so we can show the
+                                                        // matching play button and build the right embed URL.
+                                                        // The iframe is NOT rendered here - it's injected on click, so
+                                                        // playback counts as a user gesture and is allowed to have sound.
+                                                        $player    = 'file';
                                                         $embed_url = '';
-                                                        if ($video_type === 'Link' && $video_link) {
-                                                            $is_youtube = false;
-                                                            if (strpos($video_link, 'youtube.com/watch') !== false) {
-                                                                $embed_url = str_replace('watch?v=', 'embed/', $video_link);
-                                                                $is_youtube = true;
-                                                            } elseif (strpos($video_link, 'youtu.be/') !== false) {
-                                                                $embed_url = str_replace('youtu.be/', 'youtube.com/embed/', $video_link);
-                                                                $is_youtube = true;
-                                                            } elseif (strpos($video_link, 'vimeo.com') !== false && strpos($video_link, 'player.vimeo.com') === false) {
-                                                                $embed_url = str_replace('vimeo.com/', 'player.vimeo.com/video/', $video_link);
-                                                            } else {
-                                                                $embed_url = $video_link;
-                                                                $is_youtube = strpos($video_link, 'youtube') !== false;
-                                                            }
+                                                        $yt_id     = '';
 
-                                                            // YouTube uses `mute=1`, Vimeo uses `muted=1`
-                                                            $autoplay_params = $is_youtube ? 'autoplay=1&mute=1&playsinline=1' : 'autoplay=1&muted=1&playsinline=1';
-                                                            $embed_url .= (strpos($embed_url, '?') !== false ? '&' : '?') . $autoplay_params;
+                                                        if ($video_type === 'Link' && $video_link) {
+                                                            if (preg_match('~(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})~', $video_link, $m)) {
+                                                                $player    = 'youtube';
+                                                                $yt_id     = $m[1];
+                                                                $embed_url = 'https://www.youtube.com/embed/' . $yt_id . '?autoplay=1&rel=0&playsinline=1';
+                                                            } elseif (preg_match('~vimeo\.com/(?:video/)?(\d+)(?:/([A-Za-z0-9]+))?(?:\?h=([A-Za-z0-9]+))?~', $video_link, $m)) {
+                                                                $player    = 'vimeo';
+                                                                $embed_url = 'https://player.vimeo.com/video/' . $m[1] . '?autoplay=1&playsinline=1';
+                                                                // Unlisted/private videos need their hash or the embed is rejected
+                                                                $vimeo_hash = !empty($m[2]) ? $m[2] : (!empty($m[3]) ? $m[3] : '');
+                                                                if ($vimeo_hash !== '') {
+                                                                    $embed_url .= '&h=' . $vimeo_hash;
+                                                                }
+                                                            } else {
+                                                                $player    = 'embed';
+                                                                $embed_url = $video_link . (strpos($video_link, '?') !== false ? '&' : '?') . 'autoplay=1';
+                                                            }
+                                                        }
+
+                                                        // Poster: use the ACF thumbnail, else fall back to YouTube's own still
+                                                        $poster = $thumbnail;
+                                                        if (!$poster && $yt_id) {
+                                                            $poster = 'https://img.youtube.com/vi/' . $yt_id . '/maxresdefault.jpg';
                                                         }
                                                     ?>
                                                      <div class="item" data-aos="fade-up"
                                                         data-aos-delay="200" data-aos-duration="800">
 
                                                         <div class="video-block mb-2">
-                                                            <?php if ($video_type === 'File' && $video_file): ?>
-                                                                <div class="video-media">
-                                                                    <video controls playsinline autoplay muted preload="auto"
-                                                                        <?php if ($thumbnail): ?>poster="<?php echo esc_url($thumbnail); ?>"<?php endif; ?>>
-                                                                        <source src="<?php echo esc_url($video_file); ?>" type="video/mp4">
-                                                                    </video>
-                                                                </div>
-                                                            <?php elseif ($embed_url): ?>
-                                                                <div class="video-embed">
-                                                                    <iframe src="<?php echo esc_url($embed_url); ?>"
-                                                                        title="Video Player"
-                                                                        loading="lazy"
-                                                                        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                                                                        allowfullscreen></iframe>
+                                                            <?php if (($video_type === 'File' && $video_file) || $embed_url): ?>
+                                                                <div class="video-player video-player--<?php echo esc_attr($player); ?>"
+                                                                    data-player="<?php echo esc_attr($player); ?>"
+                                                                    <?php if ($embed_url): ?>data-src="<?php echo esc_url($embed_url); ?>"<?php endif; ?>>
+
+                                                                    <?php if ($player === 'file'): ?>
+                                                                        <video playsinline preload="metadata"
+                                                                            <?php if ($poster): ?>poster="<?php echo esc_url($poster); ?>"<?php endif; ?>>
+                                                                            <source src="<?php echo esc_url($video_file); ?>" type="video/mp4">
+                                                                        </video>
+                                                                    <?php elseif ($poster): ?>
+                                                                        <img class="video-player__poster" src="<?php echo esc_url($poster); ?>"
+                                                                            alt="" loading="lazy">
+                                                                    <?php endif; ?>
+
+                                                                    <button type="button" class="video-play-btn" aria-label="Play video">
+                                                                        <?php if ($player === 'youtube'): ?>
+                                                                            <!-- YouTube: wide red rounded rectangle, white triangle -->
+                                                                            <svg class="video-play-btn__icon" viewBox="0 0 68 48" aria-hidden="true">
+                                                                                <path class="yt-bg" d="M66.5 7.7a8.6 8.6 0 0 0-6-6C55.2 0 34 0 34 0S12.8 0 7.5 1.7a8.6 8.6 0 0 0-6 6A89.9 89.9 0 0 0 0 24a89.9 89.9 0 0 0 1.5 16.3 8.6 8.6 0 0 0 6 6C12.8 48 34 48 34 48s21.2 0 26.5-1.7a8.6 8.6 0 0 0 6-6A89.9 89.9 0 0 0 68 24a89.9 89.9 0 0 0-1.5-16.3z"/>
+                                                                                <path d="M27 34V14l18 10z" fill="#fff"/>
+                                                                            </svg>
+                                                                        <?php elseif ($player === 'vimeo'): ?>
+                                                                            <svg class="video-play-btn__icon" viewBox="0 0 72 72" aria-hidden="true">
+                                                                                <circle class="fl-bg" cx="36" cy="36" r="36"/>
+                                                                                <path class="fl-tri" d="M29 50V22l22 14z"/>
+                                                                            </svg>
+                                                                        <?php else: ?>
+                                                                            <!-- Uploaded file: solid white circle with a dark triangle -->
+                                                                            <svg class="video-play-btn__icon" viewBox="0 0 72 72" aria-hidden="true">
+                                                                                <circle class="fl-bg" cx="36" cy="36" r="36"/>
+                                                                                <path class="fl-tri" d="M29 50V22l22 14z"/>
+                                                                            </svg>
+                                                                        <?php endif; ?>
+                                                                    </button>
                                                                 </div>
                                                             <?php endif; ?>
                                                         </div>
@@ -639,3 +673,61 @@ jQuery(document).ready(function($){
     });
 	});
 </script>
+
+<?php
+// Click-to-play handler for the inline video players.
+// Printed only once per page even though this section can repeat.
+if (!defined('MOTIONEDITS_VIDEO_PLAYER_JS')) {
+    define('MOTIONEDITS_VIDEO_PLAYER_JS', true);
+    ?>
+    <script>
+    (function () {
+        /* Click the custom play button -> start the real player WITH sound.
+           Because this runs from a real click, browsers allow unmuted playback. */
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.video-play-btn');
+            if (!btn) return;
+
+            var wrap = btn.closest('.video-player');
+            if (!wrap) return;
+
+            if (wrap.dataset.player === 'file') {
+                var video = wrap.querySelector('video');
+                if (!video) return;
+                video.muted = false;
+                video.volume = 1;
+                video.setAttribute('controls', 'controls'); // hand over to native controls
+                video.play();
+            } else {
+                if (wrap.classList.contains('is-loaded')) return;
+                var src = wrap.dataset.src;
+                if (!src) return;
+
+                var iframe = document.createElement('iframe');
+                iframe.src = src;
+                iframe.title = 'Video player';
+                iframe.setAttribute('frameborder', '0');
+                iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
+                iframe.setAttribute('allowfullscreen', '');
+                wrap.appendChild(iframe);
+                wrap.classList.add('is-loaded');
+            }
+
+            wrap.classList.add('is-playing');
+        });
+
+        /* For uploaded files, bring the play button back when paused/ended.
+           play/pause don't bubble, so listen in the capture phase. */
+        ['play', 'pause', 'ended'].forEach(function (evt) {
+            document.addEventListener(evt, function (e) {
+                if (!e.target || e.target.tagName !== 'VIDEO') return;
+                var wrap = e.target.closest('.video-player');
+                if (!wrap) return;
+                wrap.classList.toggle('is-playing', evt === 'play');
+            }, true);
+        });
+    })();
+    </script>
+    <?php
+}
+?>

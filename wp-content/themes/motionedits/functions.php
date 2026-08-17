@@ -285,7 +285,7 @@ if ( defined( 'JETPACK__VERSION' ) ) {
  */
 function disable_acf_pro_update( $value ) {
     if ( isset( $value ) && is_object( $value ) ) {
-        unset( $value->response['advanced-custom-fields-pro-master/acf.php'] );
+        unset( $value->response['advanced-custom-fields-pro/acf.php'] );
     }
     return $value;
 }
@@ -316,14 +316,19 @@ function cc_mime_types($mimes) {
 }
 add_filter('upload_mimes', 'cc_mime_types');
 
-// 'display'  => __('Once Monthly'),
-add_filter('cron_schedules', function ($schedules) {
-    $schedules['monthly'] = [
-        'interval' => MONTH_IN_SECONDS,
-		'display'  => __('Once Monthly'),
-    ];
-    return $schedules;
-});
+/**
+ * One-time cleanup: the old 'monthly' cron schedule used a fixed
+ * MONTH_IN_SECONDS (30-day) interval, which drifts against real calendar
+ * months (28-31 days) and eventually fires before the month actually ends.
+ * That caused reports to be sent for the wrong month. Both report crons
+ * now self-reschedule for the literal "first day of next month" instead,
+ * so this clears out any previously (mis-)scheduled recurring event.
+ */
+if (!get_option('motionedits_monthly_cron_fix_v1')) {
+    wp_clear_scheduled_hook('cfdb7_monthly_csv_event');
+    wp_clear_scheduled_hook('calendly_monthly_report');
+    update_option('motionedits_monthly_cron_fix_v1', 1);
+}
 
 /**
  * MAIN FUNCTION TO EXPORT AND SEND CSV
@@ -413,7 +418,7 @@ function cfdb7_send_csv()
 
     $headers = [
         'Content-Type: text/html; charset=UTF-8',
-        'From: <' . $admin_email . '>'
+        'From: <' . $admin_email . '>',
     ];
 
     // SEND EMAIL
@@ -430,14 +435,13 @@ function cfdb7_send_csv()
     } else {
         error_log("CFDB7 CSV failed to send to {$admin_email}");
     }
+
+    // Reschedule for the first day of the next calendar month.
+    wp_schedule_single_event(strtotime('first day of next month 00:00'), 'cfdb7_monthly_csv_event');
 }
 
 if (!wp_next_scheduled('cfdb7_monthly_csv_event')) {
-	$timestamp = strtotime('first day of next month 00:00');
-	error_log('Scheduling cron event now');
-    //wp_schedule_event(time(), 'monthly', 'cfdb7_monthly_csv_event');
-//     wp_schedule_single_event($timestamp, 'monthly', 'cfdb7_monthly_csv_event');
-	wp_schedule_event($timestamp, 'monthly', 'cfdb7_monthly_csv_event');
+	wp_schedule_single_event(strtotime('first day of next month 00:00'), 'cfdb7_monthly_csv_event');
 }
 
 // Scheduled monthly email
@@ -539,17 +543,19 @@ function calendly_send_csv($from = null, $to = null) {
         $admin_email,
         $subject,
         $body,
-        ['Content-Type: text/html; charset=UTF-8'],
+        [
+            'Content-Type: text/html; charset=UTF-8',
+        ],
         [$file_path]
     );
+
+    // Reschedule for the first day of the next calendar month.
+    wp_schedule_single_event(strtotime('first day of next month 00:00'), 'calendly_monthly_report');
 }
 
 
 if (!wp_next_scheduled('calendly_monthly_report')) {
-	$timestamp = strtotime('first day of next month 00:00');
-   //wp_schedule_event(time(), 'monthly', 'calendly_monthly_report');
-//     wp_schedule_single_event($timestamp, 'monthly', 'calendly_monthly_report');
-	wp_schedule_event($timestamp, 'monthly', 'calendly_monthly_report');
+	wp_schedule_single_event(strtotime('first day of next month 00:00'), 'calendly_monthly_report');
 }
 
 add_action('calendly_monthly_report', 'calendly_send_csv');

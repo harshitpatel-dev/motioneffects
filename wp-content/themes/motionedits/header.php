@@ -28,7 +28,7 @@ $is_landing_subdomain = $is_video_editor_subdomain || $is_vfx_subdomain;
 
 $gtm_id = null;
 
-if ($is_video_editor_subdomain) {
+if ($is_video_editor_subdomain || $is_vfx_subdomain) {
     $gtm_id = 'GTM-TST2NBSR';
 } elseif (!$is_vfx_subdomain) {
     $gtm_id = 'GTM-MNMLJWPZ';
