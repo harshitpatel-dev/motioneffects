@@ -71,7 +71,23 @@ if($mobile_slider){
 								
 								$icon = $grid['icon'];
 						$is_svg = pathinfo($icon['url'], PATHINFO_EXTENSION) === 'svg';
+						if ($is_svg && (empty($icon['width']) || empty($icon['height']))) {
+							list($icon['width'], $icon['height']) = motionedits_get_svg_dimensions($icon['url']);
+						}
 								$is_gif = str_ends_with(strtolower($icon['url']), '.gif');
+
+								// The image-optimization plugin generates a "<file>.webp"
+								// sibling next to animated GIFs (foo.gif -> foo.gif.webp)
+								// but nothing served it - <img> loaded the raw multi-hundred-KB
+								// GIF directly. Serve the WebP sibling when it exists.
+								$icon_webp_url = false;
+								if ($is_gif) {
+									$upload_dir   = wp_get_upload_dir();
+									$icon_fs_path = str_replace($upload_dir['baseurl'], $upload_dir['basedir'], $icon['url']) . '.webp';
+									if (file_exists($icon_fs_path)) {
+										$icon_webp_url = $icon['url'] . '.webp';
+									}
+								}
                                 ?>
                                 <div class="grid_column_columns-inner content-wrap <?php echo $anchor_class;?>">
 
@@ -79,17 +95,18 @@ if($mobile_slider){
                                         <?php if($grid['icon']): ?>
                                             <div class="iconWrap">
                                                 <?php if(is_array($grid['icon'])): ?>
-<!--                                                     <img src="<?php echo esc_url($grid['icon']['url']); ?>" alt="<?php echo esc_attr($grid['icon']['alt']); ?>" fetchpriority="high" loading="lazy"> -->
-												<img 
+                                                <?php if ($icon_webp_url): ?><picture><source srcset="<?php echo esc_url($icon_webp_url); ?>" type="image/webp"><?php endif; ?>
+												<img
             src="<?php echo esc_url($icon['url']); ?>"
             alt="<?php echo esc_attr($icon['alt'] ?: $grid['title']); ?>"
             loading="<?php echo $is_gif ? 'lazy' : 'eager'; ?>"
             fetchpriority="<?php echo $is_gif ? 'low' : ''; ?>"
-            <?php if (!$is_svg): ?>
+            <?php if (!empty($icon['width']) && !empty($icon['height'])): ?>
                 width="<?php echo esc_attr($icon['width']); ?>"
                 height="<?php echo esc_attr($icon['height']); ?>"
             <?php endif; ?>
         >
+                                                <?php if ($icon_webp_url): ?></picture><?php endif; ?>
                                                 <?php else: ?>
                                                     <img src="<?php echo esc_url($grid['icon']); ?>" alt="" fetchpriority="<?php echo $is_gif ? 'low' : ''; ?>" loading="lazy">
                                                 <?php endif; ?>
@@ -170,7 +187,22 @@ if($mobile_slider){
                                 else $col = 'col-md-12';
 						$icon = $grid['icon'];
 						$is_svg = pathinfo($icon['url'], PATHINFO_EXTENSION) === 'svg';
+						if ($is_svg && (empty($icon['width']) || empty($icon['height']))) {
+							list($icon['width'], $icon['height']) = motionedits_get_svg_dimensions($icon['url']);
+						}
 						$is_gif = str_ends_with(strtolower($icon['url']), '.gif');
+
+						// See the "Services" branch above for why: serve the
+						// already-generated WebP sibling of animated GIFs instead
+						// of the raw GIF when one exists on disk.
+						$icon_webp_url = false;
+						if ($is_gif) {
+							$upload_dir   = wp_get_upload_dir();
+							$icon_fs_path = str_replace($upload_dir['baseurl'], $upload_dir['basedir'], $icon['url']) . '.webp';
+							if (file_exists($icon_fs_path)) {
+								$icon_webp_url = $icon['url'] . '.webp';
+							}
+						}
                         ?>
                             <div class="grid <?php echo $col; ?>" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
                                 <?php $animation_delay += 100; ?>
@@ -180,17 +212,18 @@ if($mobile_slider){
                                         <?php if($grid['icon']): ?>
                                             <div class="iconWrap">
                                                 <?php if(is_array($grid['icon'])): ?>
-<!--                                                     <img src="<?php echo esc_url($grid['icon']['url']); ?>" alt="<?php echo esc_attr($grid['icon']['alt']); ?>" fetchpriority="high" loading="lazy"> -->
-												 <img 
+                                                <?php if ($icon_webp_url): ?><picture><source srcset="<?php echo esc_url($icon_webp_url); ?>" type="image/webp"><?php endif; ?>
+												 <img
             src="<?php echo esc_url($icon['url']); ?>"
             alt="<?php echo esc_attr($icon['alt'] ?: $grid['title']); ?>"
             loading="<?php echo $is_gif ? 'lazy' : 'eager'; ?>"
             fetchpriority="<?php echo $is_gif ? 'low' : ''; ?>"
-            <?php if (!$is_svg): ?>
+            <?php if (!empty($icon['width']) && !empty($icon['height'])): ?>
                 width="<?php echo esc_attr($icon['width']); ?>"
                 height="<?php echo esc_attr($icon['height']); ?>"
             <?php endif; ?>
         >
+                                                <?php if ($icon_webp_url): ?></picture><?php endif; ?>
                                                 <?php else: ?>
                                                     <img src="<?php echo esc_url($grid['icon']); ?>" fetchpriority="<?php echo $is_gif ? 'low' : ''; ?>" loading="lazy">
                                                 <?php endif; ?>

@@ -13,6 +13,65 @@ if ( ! defined( '_S_VERSION' ) ) {
 }
 
 /**
+ * vfx.motionedits.com and video-editor.motionedits.com don't need spam
+ * protection on their contact forms, but the contact-form-7-simple-recaptcha
+ * plugin loads unconditionally on every domain sharing this WordPress
+ * install (its includes/recaptcha.php and includes/recaptcha-v3.php are
+ * require_once'd directly, not gated behind any hook) - costing ~1MB of JS
+ * and a large chunk of Total Blocking Time even on pages where the client
+ * never asked for a captcha. Both the widget/token shortcodes and the
+ * server-side validation filter are removed here for those two subdomains,
+ * so submissions aren't rejected for missing a token that never gets
+ * generated. motionedits.com is untouched and keeps captcha protection.
+ */
+function motionedits_is_captcha_free_subdomain() {
+	$host = strtolower( $_SERVER['HTTP_HOST'] ?? '' );
+	return in_array( $host, array( 'video-editor.motionedits.com', 'vfx.motionedits.com' ), true );
+}
+
+function motionedits_disable_recaptcha_on_subdomains() {
+	if ( ! motionedits_is_captcha_free_subdomain() ) {
+		return;
+	}
+
+	// v3 (invisible, score-based)
+	remove_shortcode( 'cf7sr-v3-recaptcha' );
+	add_shortcode( 'cf7sr-v3-recaptcha', '__return_empty_string' );
+	remove_filter( 'wpcf7_validate', 'cf7sr_verify_recaptcha_v3', 20 );
+
+	// v2 (checkbox/image challenge)
+	remove_shortcode( 'cf7sr-simple-recaptcha' );
+	remove_shortcode( 'cf7sr-recaptcha' );
+	add_shortcode( 'cf7sr-simple-recaptcha', '__return_empty_string' );
+	add_shortcode( 'cf7sr-recaptcha', '__return_empty_string' );
+	remove_filter( 'wpcf7_validate', 'cf7sr_verify_recaptcha', 20 );
+}
+add_action( 'init', 'motionedits_disable_recaptcha_on_subdomains', 20 );
+
+/**
+ * jquery-migrate is enqueued by WordPress core automatically alongside
+ * jQuery, as a compatibility shim for deprecated jQuery APIs (.live(),
+ * .size(), etc.). Neither this theme's own JS (custom.js, navigation.js,
+ * aos.js, every component's inline script) nor jQuery core itself needs it
+ * on video-editor/vfx - it's dead weight there. Left in place on
+ * motionedits.com in case any other plugin's frontend JS on that domain
+ * relies on it.
+ */
+function motionedits_remove_jquery_migrate_on_subdomains( $scripts ) {
+	if ( is_admin() || ! motionedits_is_captcha_free_subdomain() ) {
+		return;
+	}
+
+	if ( isset( $scripts->registered['jquery'] ) ) {
+		$scripts->registered['jquery']->deps = array_diff(
+			$scripts->registered['jquery']->deps,
+			array( 'jquery-migrate' )
+		);
+	}
+}
+add_action( 'wp_default_scripts', 'motionedits_remove_jquery_migrate_on_subdomains' );
+
+/**
  * Sets up theme defaults and registers support for various WordPress features.
  *
  * Note that this function is hooked into the after_setup_theme hook, which
@@ -148,14 +207,6 @@ function motionedits_scripts() {
         '5.3.8'
     );
 
-    // Font Awesome
-    wp_enqueue_style(
-        'motionedits-fontawesome',
-        get_template_directory_uri() . '/css/all.min.css',
-        [],
-        '6.6.0'
-    );
-
     // Boxicons
     wp_enqueue_style(
         'motionedits-boxicons',
@@ -250,6 +301,88 @@ function motionedits_scripts() {
     }
 }
 add_action('wp_enqueue_scripts', 'motionedits_scripts');
+
+/**
+ * MaxMegaMenu unconditionally enqueues the full WordPress admin dashicons
+ * stylesheet (~35KB) on the frontend whenever its arrow/close icon setting
+ * is left on "Dashicons" (Mega_Menu_Dashicons::enqueue_styles(), hooked to
+ * megamenu_enqueue_public_scripts). PageSpeed confirms 100% of it is unused
+ * here, and no dashicons-* class actually appears in the rendered menu
+ * markup, so it's safe to drop outright. Priority 100 ensures this runs
+ * after the megamenu plugin (and anything else) has already enqueued it.
+ */
+function motionedits_dequeue_unused_dashicons() {
+	if (is_admin()) {
+		return;
+	}
+	wp_dequeue_style('dashicons');
+	wp_deregister_style('dashicons');
+}
+add_action('wp_enqueue_scripts', 'motionedits_dequeue_unused_dashicons', 100);
+
+/**
+ * WordPress core doesn't read intrinsic dimensions for SVG uploads (no
+ * SVG-metadata plugin is installed here), so ACF image fields report
+ * width=0/height=0 for every SVG icon - even though the SVG files
+ * themselves declare real width/height in their root <svg> tag. That gap
+ * is why icon grids using SVGs (tool/software logos, feature icons) were
+ * still failing "explicit width and height" CLS audits even after PNG/GIF
+ * icons got fixed. This reads the dimensions directly from the file as a
+ * fallback, falling back again to the viewBox if the root tag has no
+ * explicit width/height. Result is cached per-request since the same icon
+ * URL is often reused across several grid items.
+ */
+function motionedits_get_svg_dimensions($svg_url) {
+	static $cache = array();
+
+	if (isset($cache[$svg_url])) {
+		return $cache[$svg_url];
+	}
+
+	$upload_dir = wp_get_upload_dir();
+	$path       = str_replace($upload_dir['baseurl'], $upload_dir['basedir'], $svg_url);
+
+	if (!file_exists($path)) {
+		return $cache[$svg_url] = array(0, 0);
+	}
+
+	// Only the opening <svg> tag is needed, which is always near the start
+	// of the file - read a small chunk regardless of the file's total size
+	// (some of these "SVGs" are actually several hundred KB because they
+	// embed raster image data, but that doesn't cost us anything here).
+	$contents = file_get_contents($path, false, null, 0, 4096);
+	$root     = null;
+	if (preg_match('/<svg\b[^>]*>/i', $contents, $m)) {
+		$root = $m[0];
+	}
+
+	$width = $height = 0;
+	if ($root) {
+		if (preg_match('/\bwidth="([\d.]+)/i', $root, $w) && preg_match('/\bheight="([\d.]+)/i', $root, $h)) {
+			$width  = (float) $w[1];
+			$height = (float) $h[1];
+		} elseif (preg_match('/\bviewBox="[\d.\s-]+"/i', $root, $vb)) {
+			$parts = preg_split('/[\s,]+/', trim(str_replace(array('viewBox="', '"'), '', $vb[0])));
+			if (count($parts) === 4) {
+				$width  = (float) $parts[2];
+				$height = (float) $parts[3];
+			}
+		}
+	}
+
+	return $cache[$svg_url] = array($width, $height);
+}
+
+/**
+ * Boxicons used to be deferred here via the media="print" onload="..." trick
+ * to keep it off the render-blocking chain. On the live site NitroPack also
+ * runs its own CSS deferral/critical-CSS pass over every stylesheet, and the
+ * two deferral layers collided: NitroPack's rewrite of our onload link only
+ * left the <noscript> fallback in the rendered HTML, so JS-enabled visitors
+ * (i.e. everyone) never got the real stylesheet and footer/header social
+ * icons (bx bxl-*) silently failed to render. NitroPack already defers this
+ * stylesheet on its own, so the manual trick is redundant - removed.
+ */
 
 
 /**

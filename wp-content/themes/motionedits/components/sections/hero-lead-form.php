@@ -70,10 +70,20 @@ $form_shortcode = get_sub_field('form_shortcode');
 										$item_title = get_sub_field('item_title');
 										$item_text = get_sub_field('item_text');
 
+										// ACF reports width=0/height=0 for SVGs (no SVG-metadata
+										// plugin is installed), so fall back to reading the
+										// dimensions straight out of the file - see
+										// motionedits_get_svg_dimensions() in functions.php.
+										if (pathinfo($icon['url'], PATHINFO_EXTENSION) === 'svg' && (empty($icon['width']) || empty($icon['height']))) {
+											list($icon['width'], $icon['height']) = motionedits_get_svg_dimensions($icon['url']);
+										}
 									?>
 										<li class="feature-item">
 											<div class="feature-icon">
-												<img src="<?php echo $icon['url']; ?>" alt="<?php echo $icon['alt']; ?>">
+												<img src="<?php echo esc_url($icon['url']); ?>" alt="<?php echo esc_attr($icon['alt']); ?>"
+													<?php if (!empty($icon['width']) && !empty($icon['height'])): ?>
+														width="<?php echo esc_attr($icon['width']); ?>" height="<?php echo esc_attr($icon['height']); ?>"
+													<?php endif; ?>>
 											</div>
 											<div class="feature-content">
 												<?php if ($item_title): ?>
@@ -102,12 +112,20 @@ $form_shortcode = get_sub_field('form_shortcode');
 										$icon = $card['icon'];
 										$card_title = $card['title'];
 										$icon_url = is_array($icon) ? ($icon['url'] ?? '') : $icon;
+						$icon_width = is_array($icon) ? ($icon['width'] ?? '') : '';
+						$icon_height = is_array($icon) ? ($icon['height'] ?? '') : '';
+						if (!empty($icon_url) && pathinfo($icon_url, PATHINFO_EXTENSION) === 'svg' && (empty($icon_width) || empty($icon_height))) {
+							list($icon_width, $icon_height) = motionedits_get_svg_dimensions($icon_url);
+						}
 									?>
 										<div class="specialize-card col-6 col-md-3">
 											<div class="content-wrapper">
 												<?php if (!empty($icon_url) && !empty($card_title)): ?>
 													<div class="image-wrapper">
-														<img src="<?php echo esc_url($icon_url); ?>" alt="<?php echo esc_attr($card_title); ?>" fetchpriority="high" loading="lazy" />
+														<img src="<?php echo esc_url($icon_url); ?>" alt="<?php echo esc_attr($card_title); ?>" fetchpriority="high" loading="lazy"
+															<?php if (!empty($icon_width) && !empty($icon_height)): ?>
+																width="<?php echo esc_attr($icon_width); ?>" height="<?php echo esc_attr($icon_height); ?>"
+															<?php endif; ?> />
 													</div>
 												<?php endif; ?>
 												<?php if (!empty($card_title)): ?>

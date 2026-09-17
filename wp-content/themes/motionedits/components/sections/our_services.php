@@ -64,8 +64,31 @@ $animation_delay = 0;
                                         </div>
                                     <?php elseif ($type === "Icon") : ?>
                                         <div class="icon">
-                                            <?php if ($icon) : ?>
-                                                <img src="<?php echo esc_url($icon); ?>" alt="" loading="lazy">
+                                            <?php if ($icon) :
+                                                // The image-optimization plugin generates a
+                                                // "<file>.webp" sibling next to animated GIFs
+                                                // (e.g. foo.gif -> foo.gif.webp) but nothing
+                                                // was actually serving it — <img> pointed
+                                                // straight at the multi-hundred-KB GIF. Serve
+                                                // the WebP sibling when it exists, with the
+                                                // original GIF kept as the fallback source.
+                                                $icon_webp_path = false;
+                                                if (preg_match('/\.gif$/i', $icon)) {
+                                                    $upload_dir      = wp_get_upload_dir();
+                                                    $icon_fs_path    = str_replace($upload_dir['baseurl'], $upload_dir['basedir'], $icon) . '.webp';
+                                                    if (file_exists($icon_fs_path)) {
+                                                        $icon_webp_path = $icon . '.webp';
+                                                    }
+                                                }
+                                            ?>
+                                                <?php if ($icon_webp_path) : ?>
+                                                    <picture>
+                                                        <source srcset="<?php echo esc_url($icon_webp_path); ?>" type="image/webp">
+                                                        <img src="<?php echo esc_url($icon); ?>" alt="" loading="lazy">
+                                                    </picture>
+                                                <?php else : ?>
+                                                    <img src="<?php echo esc_url($icon); ?>" alt="" loading="lazy">
+                                                <?php endif; ?>
                                             <?php endif; ?>
                                         </div>
                                     <?php elseif ($type === "Buttons") : ?>

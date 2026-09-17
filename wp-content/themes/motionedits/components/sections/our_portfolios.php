@@ -112,9 +112,9 @@ $custom_class = get_sub_field('custom_class');
 										<?php endforeach;
 										wp_reset_postdata(); ?>
 									<?php endif; ?>
-									<?php if (!empty($featured)): ?>
-										<div class="load-more-wrap text-center mt-4">
-                                            <?php if (count($featured) > 6): ?>
+									<?php if (!empty($featured) || (in_array('Button', $show_elements) && !empty($cat['button']))): ?>
+										<div class="load-more-wrap text-center mt-4 d-flex justify-content-center align-items-center flex-wrap gap-3">
+                                            <?php if (!empty($featured) && count($featured) > 6): ?>
                                                 <button class="btn btn-primary load-more-btn"
                                                     data-category="<?php echo esc_attr($slug); ?>">
                                                     Load More
@@ -124,6 +124,16 @@ $custom_class = get_sub_field('custom_class');
                                                 <a href="#packages" class="btn btn-primary">
                                                     View Pricing
                                                 </a>
+                                            <?php endif; ?>
+                                            <?php if (in_array('Button', $show_elements) && !empty($cat['button'])):
+                                                $cat_button = $cat['button'];
+                                                $button_label = isset($cat_button['label']) && !empty($cat_button['label']) ? $cat_button['label'] : "View Portfolio";
+                                                $button_link = $cat_button['link'];
+                                                $link_url = $button_link['url'] ?? '#';
+                                                $link_target = $button_link['target'] ?? '_self';
+                                                ?>
+                                                <a href="<?php echo esc_url($link_url); ?>" target="<?php echo esc_attr($link_target); ?>"
+                                                    class="btn btn-primary"><?php echo esc_html($button_label); ?></a>
                                             <?php endif; ?>
 										</div>
 									<?php endif; ?>
@@ -179,21 +189,6 @@ $custom_class = get_sub_field('custom_class');
 										</div>
                                     </div>
                                 <?php endforeach; ?>
-                            <?php endif; ?>
-
-                            <?php if (in_array('Button', $show_elements) && !empty($cat['button'])): ?>
-                                <?php $cat_button = $cat['button'];
-                                $button_label = isset($cat_button['label']) && !empty($cat_button['label']) ? $cat_button['label'] : "View Portfolio";
-                                $button_link = $cat_button['link'];
-                                $link_url = $button_link['url'] ?? '#';
-                                $link_target = $button_link['target'] ?? '_self';
-                                ?>
-                                <div class="portfolios-buttons grid-item <?php echo esc_attr($slug); ?>">
-                                    <div class="buttons portfolio-btn d-flex justify-content-center mt-4">
-                                        <a href="<?php echo esc_url($link_url); ?>" target="<?php echo esc_attr($link_target); ?>"
-                                            class="btn btn-primary"><?php echo esc_html($button_label); ?></a>
-                                    </div>
-                                </div>
                             <?php endif; ?>
 
                         </div>

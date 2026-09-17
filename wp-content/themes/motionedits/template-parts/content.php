@@ -67,7 +67,7 @@
 
 					if ($tags) : ?>
 						<div class="post-tags">
-							<i class="fa fa-tags" aria-hidden="true"></i>
+							<i class="bx bx-tag" aria-hidden="true"></i>
 							<?php foreach ($tags as $tag) : ?>
 								<a href="<?php echo esc_url(get_tag_link($tag->term_id)); ?>" class="post-tag">
 									<?php echo esc_html($tag->name); ?>

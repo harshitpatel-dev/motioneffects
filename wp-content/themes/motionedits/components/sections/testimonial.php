@@ -184,8 +184,20 @@ $animation_delay = 0;
                     });
                 }
 
-                // Load YouTube API (unchanged)
-                if (!window.YT) {
+                // Load YouTube / Vimeo player APIs lazily and only once page-wide,
+                // even if this testimonials section is repeated multiple times.
+                // Previously these loaded unconditionally on document ready per
+                // section instance, causing the player script to be fetched
+                // several times before any video was ever played.
+                function motionedits_loadYouTubeAPI() {
+                    if (window.__meYouTubeApiLoading) return;
+                    window.__meYouTubeApiLoading = true;
+
+                    if (window.YT && window.YT.Player) {
+                        youtubeAPIReady = true;
+                        return;
+                    }
+
                     const tag = document.createElement('script');
                     tag.src = 'https://www.youtube.com/iframe_api';
                     const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -193,13 +205,53 @@ $animation_delay = 0;
                 }
                 window.onYouTubeIframeAPIReady = function () { youtubeAPIReady = true; };
 
-                // Load Vimeo API (unchanged)
-                if (!window.Vimeo) {
+                function motionedits_loadVimeoAPI() {
+                    if (window.__meVimeoApiLoading) return;
+                    window.__meVimeoApiLoading = true;
+
+                    if (window.Vimeo) {
+                        vimeoAPIReady = true;
+                        return;
+                    }
+
                     const vimeoScript = document.createElement('script');
                     vimeoScript.src = 'https://player.vimeo.com/api/player.js';
                     vimeoScript.onload = function () { vimeoAPIReady = true; };
                     document.head.appendChild(vimeoScript);
                 }
+
+                // Kick off loading once the slider is actually near the viewport,
+                // instead of on every page load regardless of scroll position.
+                const $testimonialSlider = $('.testimonial-video-slider').first();
+                if ($testimonialSlider.length && 'IntersectionObserver' in window) {
+                    const apiObserver = new IntersectionObserver(function (entries) {
+                        entries.forEach(function (entry) {
+                            if (entry.isIntersecting) {
+                                motionedits_loadYouTubeAPI();
+                                motionedits_loadVimeoAPI();
+                                apiObserver.disconnect();
+                            }
+                        });
+                    }, { rootMargin: '300px 0px' });
+                    apiObserver.observe($testimonialSlider[0]);
+                } else {
+                    // Fallback for browsers without IntersectionObserver support
+                    motionedits_loadYouTubeAPI();
+                    motionedits_loadVimeoAPI();
+                }
+
+                // Safety net: make sure the relevant API is loading by the time a
+                // user actually clicks play, even if they clicked before the
+                // slider intersection fired (e.g. fast scroll + immediate click).
+                $(document).on('click', '.testimonial-video-card .play-icon', function () {
+                    const videoType = $(this).closest('.testimonial-video-card').data('type');
+                    const videoUrl = $(this).closest('.testimonial-video-card').data('src') || '';
+                    if (videoType === 'Link' && videoUrl.includes('youtube.com')) {
+                        motionedits_loadYouTubeAPI();
+                    } else if (videoType === 'Link' && videoUrl.includes('vimeo.com')) {
+                        motionedits_loadVimeoAPI();
+                    }
+                });
 
                 // Fetch Vimeo thumbnails as before, but when done, update originalThumbnails for vimeo cards
                 $('.vimeo-thumb').each(function () {
