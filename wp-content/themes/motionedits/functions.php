@@ -747,16 +747,22 @@ add_action('wp_ajax_nopriv_load_more_blogs', 'load_more_blogs');
 
 function load_more_blogs() {
 
-    $paged = isset($_POST['page']) ? intval($_POST['page']) : 1;
+    $paged     = isset($_POST['page']) ? intval($_POST['page']) : 1;
+    $author_id = isset($_POST['author_id']) ? intval($_POST['author_id']) : 0;
+    $per_page  = isset($_POST['per_page']) ? intval($_POST['per_page']) : 12;
     $animation_blog_delay;
 
     $args = [
         'post_type'      => 'post',
         'post_status'    => 'publish',
-        'posts_per_page' => 12,
+        'posts_per_page' => $per_page ?: 12,
         'paged'          => $paged,
         'order'          => 'DESC',
     ];
+
+    if ($author_id) {
+        $args['author'] = $author_id;
+    }
 
     $query = new WP_Query($args);
 

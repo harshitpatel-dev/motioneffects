@@ -58,7 +58,7 @@ $animation_delay = 0;
                             <div class="items content-item <?php echo $reverse ? 'order-one' : 'order-two'; ?>">
                                 <div class="content-wrap">
                                     <div class="member-title">
-                                        <h3><?php echo esc_html($member_name); ?></h3>
+                                        <h1><?php echo esc_html($member_name); ?></h1>
                                     </div>
                                     <div class="designation"><h6><?php echo esc_html($member_designation); ?></h6></div>
                                     <div class="member-bio">

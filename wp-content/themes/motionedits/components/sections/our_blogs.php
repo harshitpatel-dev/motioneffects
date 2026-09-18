@@ -12,7 +12,14 @@ $show_all_blogs = get_sub_field('show_all_blogs'); // true/false
 $selected_tag   = get_sub_field('page_blog');
 $animation_delay = 0;
 
-if ($show_all_blogs) {
+$is_author_mode = ($show_options == "Author");
+$author_id      = $is_author_mode ? (is_author() ? get_queried_object_id() : (int) get_the_author_meta('ID')) : 0;
+
+// Author mode always lists every one of that author's posts, paginated,
+// the same as "Show All Blogs" — it doesn't need the toggle checked too.
+$is_paginated_grid = $show_all_blogs || $is_author_mode;
+
+if ($is_paginated_grid) {
 	$custom_class .= " all_blogs";
 }
 ?>
@@ -56,7 +63,17 @@ if ($show_all_blogs) {
 // 				'posts_per_page' => $show_all_blogs ? 12 : 3,
 // 				'paged' => $paged,
 // 			];
-            if(($show_all_blogs)){
+            if ($is_author_mode) {
+				// Every post by the author being viewed, paginated 6 at a time.
+				$args = [
+					'post_type'      => 'post',
+					'post_status'    => 'publish',
+					'order'          => 'DESC',
+					'posts_per_page' => 6,
+					'paged'          => $paged,
+					'author'         => $author_id,
+				];
+			} elseif ($show_all_blogs) {
 				$args = [
 					'post_type' => 'post',
 					'post_status' => 'publish',
@@ -117,20 +134,22 @@ if ($show_all_blogs) {
 			?>
 
 			<?php if ($blogsposts->have_posts()): ?>
-				<?php if ($show_all_blogs): ?>
+				<?php if ($is_paginated_grid): ?>
 			<div class="our-blogscontent"
 				data-page="1"
-				data-max="<?php echo esc_attr($blogsposts->max_num_pages); ?>">
+				data-max="<?php echo esc_attr($blogsposts->max_num_pages); ?>"
+				data-author-id="<?php echo esc_attr($author_id); ?>"
+				data-per-page="<?php echo $is_author_mode ? 6 : 12; ?>">
 		<?php else : ?>
 			<div class="our-blogscontent">
 				<?php endif; ?>
-				
-				<div class="our-blogs-content row justify-content-center <?php echo !$show_all_blogs ? 'blogs-slider' : ''; ?> ">
-					
+
+				<div class="our-blogs-content row justify-content-center <?php echo !$is_paginated_grid ? 'blogs-slider' : ''; ?> ">
+
 					<?php while ($blogsposts->have_posts()):
 						$blogsposts->the_post(); ?>
 
-						<div class="our-blog <?php echo !$show_all_blogs ? 'col-md-4 col-lg-4' : 'col-lg-4 col-sm-6'; ?>"
+						<div class="our-blog <?php echo !$is_paginated_grid ? 'col-md-4 col-lg-4' : 'col-lg-4 col-sm-6'; ?>"
 							data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
 
 							<?php $animation_delay += 200; ?>
@@ -180,8 +199,8 @@ if ($show_all_blogs) {
 
 			<?php wp_reset_postdata(); ?>
 
-			<!-- PAGINATION ONLY WHEN show_all_blogs = true -->
-			<?php if ($show_all_blogs): ?>
+			<!-- PAGINATION ONLY WHEN show_all_blogs / Author mode -->
+			<?php if ($is_paginated_grid): ?>
 				<!-- Loading indicator for infinite scroll -->
 				<div class="blog-loader" style="display:none;">
 					<div class="custom-loader">
@@ -222,7 +241,7 @@ if ($show_all_blogs) {
 	</div>
 </section>
 
-<?php if (!$show_all_blogs): ?>
+<?php if (!$is_paginated_grid): ?>
 	<script>
 		jQuery(function ($) {
 
@@ -249,7 +268,7 @@ adaptiveHeight: false,
 	</script>
 <?php endif; ?>
 
-<?php if ($show_all_blogs): ?>
+<?php if ($is_paginated_grid): ?>
 	<script type="text/javascript">
 
 		jQuery(document).ready(function($) {
@@ -274,7 +293,9 @@ adaptiveHeight: false,
 						type: "POST",
 						data: {
 							action: "load_more_blogs",
-							page: page + 1
+							page: page + 1,
+							author_id: container.attr('data-author-id'),
+							per_page: container.attr('data-per-page')
 						},
 						success: function(response){
 							$('.our-blogs-content').append(response);
