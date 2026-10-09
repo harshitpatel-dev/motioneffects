@@ -24,14 +24,8 @@
 					endif;
 
 					if ('post' === get_post_type()) :
-					?>
-						<!-- <div class="entry-meta">
-						<?php
-						motionedits_posted_on();
-						motionedits_posted_by();
-						?>
-					</div> -->
-					<?php endif; ?>
+						motionedits_entry_author_meta();
+					endif; ?>
 				</header><!-- .entry-header -->
 
 				<?php motionedits_post_thumbnail(); ?>

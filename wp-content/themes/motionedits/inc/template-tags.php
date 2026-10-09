@@ -52,6 +52,49 @@ if ( ! function_exists( 'motionedits_posted_by' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'motionedits_reading_time' ) ) :
+	/**
+	 * Returns the estimated reading time (in minutes) for the current post.
+	 */
+	function motionedits_reading_time() {
+		$content    = wp_strip_all_tags( get_post_field( 'post_content', get_the_ID() ) );
+		$word_count = str_word_count( $content );
+
+		return max( 1, (int) ceil( $word_count / 200 ) );
+	}
+endif;
+
+if ( ! function_exists( 'motionedits_entry_author_meta' ) ) :
+	/**
+	 * Prints the post author/date/reading-time meta block.
+	 *
+	 * Author name, link and avatar are pulled from the post's actual WP
+	 * author (set via motionedits_default_post_author() to Aman Sanghvi
+	 * when nothing is picked at publish time).
+	 */
+	function motionedits_entry_author_meta() {
+		$author_id   = (int) get_the_author_meta( 'ID' );
+		$author_name = get_the_author();
+		$author_url  = get_author_posts_url( $author_id );
+		$avatar      = get_avatar( $author_id, 96, '', $author_name, array( 'class' => '' ) );
+		?>
+		<div class="entry-author-meta">
+			<a href="<?php echo esc_url( $author_url ); ?>" class="author-avatar">
+				<?php echo $avatar; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</a>
+			<div class="author-meta-text">
+				<a href="<?php echo esc_url( $author_url ); ?>" class="author-name"><?php echo esc_html( $author_name ); ?></a>
+				<span class="meta-info">
+					<span class="posted-date"><?php echo esc_html( get_the_date() ); ?></span>
+					<span class="meta-dot">&middot;</span>
+					<span class="reading-time"><?php echo esc_html( motionedits_reading_time() ); ?> min read</span>
+				</span>
+			</div>
+		</div>
+		<?php
+	}
+endif;
+
 if ( ! function_exists( 'motionedits_entry_footer' ) ) :
 	/**
 	 * Prints HTML with meta information for the categories, tags and comments.

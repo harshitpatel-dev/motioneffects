@@ -815,6 +815,46 @@ function load_more_blogs() {
     wp_die();
 }
 
+/**
+ * Default new blog posts to Aman Sanghvi as the author when nobody
+ * manually picks one at publish time (client requirement, see Oct 2026
+ * byline update).
+ */
+function motionedits_default_post_author($data, $postarr) {
+    if ('post' === $data['post_type'] && 'auto-draft' === $data['post_status'] && empty($postarr['ID'])) {
+        $default_author = get_user_by('login', 'Aman Sanghvi');
+        if ($default_author) {
+            $data['post_author'] = $default_author->ID;
+        }
+    }
+
+    return $data;
+}
+add_filter('wp_insert_post_data', 'motionedits_default_post_author', 10, 2);
+
+/**
+ * Serve the uploaded profile photo for Aman Sanghvi instead of his
+ * Gravatar fallback, since no Gravatar is registered for his account.
+ */
+function motionedits_author_avatar_url($url, $id_or_email) {
+    $user = false;
+
+    if (is_numeric($id_or_email)) {
+        $user = get_user_by('id', $id_or_email);
+    } elseif (is_object($id_or_email) && !empty($id_or_email->user_id)) {
+        $user = get_user_by('id', $id_or_email->user_id);
+    } elseif (is_string($id_or_email)) {
+        $user = get_user_by('email', $id_or_email);
+    }
+
+    if ($user && 'aman-sanghvi' === $user->user_nicename) {
+        return content_url('uploads/2025/12/aman-sanghvi-150x150.png');
+    }
+
+    return $url;
+}
+add_filter('get_avatar_url', 'motionedits_author_avatar_url', 10, 2);
+
 function add_acf_body_class($classes) {
     $custom_classes = get_field('body_custom_class');
 
