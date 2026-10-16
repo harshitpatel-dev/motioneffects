@@ -76,19 +76,6 @@ if ($is_video_editor_subdomain || $is_vfx_subdomain) {
 	<?php wp_head(); ?>
 	
 <?php if (!$is_landing_subdomain) : ?>
-<!-- Analytics Code -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-141696682-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'UA-141696682-1');
-  gtag('config', 'AW-10860440795');
-</script>
-	<!-- End Analytics Code -->
-	<?php endif; ?>
-	
-<?php if (!$is_landing_subdomain) : ?>	
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQJ5NRPT4D"></script>
 <script>
@@ -97,6 +84,7 @@ if ($is_video_editor_subdomain || $is_vfx_subdomain) {
   gtag('js', new Date());
 
   gtag('config', 'G-TQJ5NRPT4D');
+  gtag('config', 'AW-10860440795');
 </script>
 	<!-- End Google tag (gtag.js) -->
 	<?php endif; ?>
