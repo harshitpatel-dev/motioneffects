@@ -332,43 +332,6 @@ $mobile_slider_column = false;
                                                             <p class="modal-signature">Talk to you soon,<br><strong>Motion Edits</strong></p>
                                                         </div>
                                                     </div>
-											<script>
-                                                            document.addEventListener('DOMContentLoaded', function () {
-
-                                                        document.addEventListener('wpcf7mailsent', function () {
-
-                                                            if (event.detail.status !== 'mail_sent') return;
-
-                                                            const contactSection = document.getElementsByClassName('contact-section')[0];
-                                                            const thankyouSection = document.getElementsByClassName('thankyou-section')[0];
-
-                                                            if (contactSection && thankyouSection) {
-                                                                thankyouSection.style.display = 'block';
-                                                                contactSection.style.display = 'none';
-                                                            }
-
-                                                            setTimeout(function () {
-                                                                const responseOutput = document.querySelector('.wpcf7-response-output');
-                                                                if (responseOutput && responseOutput.innerText.includes('Thank you for your message')) {
-                                                                    responseOutput.textContent = '';
-                                                                }
-
-                                                                const form = document.querySelector('.wpcf7 form');
-                                                                if (form && form.classList.contains('sent')) {
-                                                                    form.classList.remove('sent');
-                                                                    form.classList.add('init');
-                                                                }
-                                                            }, 1500);
-															
-															 // REDIRECT TO THANK YOU PAGE
-															setTimeout(function () {
-																window.location.href = "/thank-you/";
-															}, 2000); // delay for smooth UX
-
-                                                        }, false);
-
-                                                    });
-                                                        </script>
                                                     <?php $animation_delay += 200; ?>
 
                                                 <?php elseif ($type === "Grid" && $grid): ?>
@@ -553,126 +516,8 @@ $mobile_slider_column = false;
 
 
 <?php if ($mobile_slider_column): ?>
-    <script>
-        jQuery(document).ready(function ($) {
-
-            function initToolsMobileSlider() {
-                var slider = $('.mobile-column-slider');
-
-                if (window.innerWidth <= 991) {
-                    if (!slider.hasClass('slick-initialized')) {
-                        slider.slick({
-					infinite: false,
-                            slidesToShow: 2,
-                            slidesToScroll: 1,
-                            dots: false,
-                            arrows: false,
-                            autoplay: true,
-							 swipe: true,
-    draggable: true,
-    touchMove: true,
-    swipeToSlide: false,
-					
-					touchThreshold: 4,   // LOWER = faster swipe
-    speed: 250,          // FAST animation
-    cssEase: 'cubic-bezier(0.4, 0, 0.2, 1)', // Google Material easing
-
-    /* Prevent sluggish feel */
-    waitForAnimate: false,
-    edgeFriction: 0.15,
-
-    /* Stability */
-    accessibility: false,
-							adaptiveHeight: false,
-                            responsive: [
-                                {
-                                    breakpoint: 767,
-                                    settings: {
-                                        slidesToShow: 2,
-                                        slidesToScroll: 1,
-										dots: true,
-                                    }
-                                },
-                                {
-                                    breakpoint: 576,
-                                    settings: {
-                                        slidesToShow: 1,
-                                        slidesToScroll: 1,
-										dots: true,
-                                    }
-                                }
-                            ]
-                        });
-                    }
-                } else {
-                    if (slider.hasClass('slick-initialized')) {
-                        slider.slick('unslick');
-                    }
-                }
-            }
-
-            initToolsMobileSlider();
-            $(window).on('resize', initToolsMobileSlider);
-
-        });
-    </script>
 <?php endif; ?>
 
-<script>
-jQuery(document).ready(function($){
- /* Inner Column Grid Slider */
-    jQuery('.inner-column-slider').slick({
-		infinite: false,
-        slidesToShow: 4,
-        slidesToScroll: 1,
-        dots: false,
-        arrows: false,
-        autoplay: true,
-		 swipe: true,
-    draggable: true,
-    touchMove: true,
-    swipeToSlide: false,
-					
-					touchThreshold: 4,   // LOWER = faster swipe
-    speed: 250,          // FAST animation
-    cssEase: 'cubic-bezier(0.4, 0, 0.2, 1)', // Google Material easing
-
-    /* Prevent sluggish feel */
-    waitForAnimate: false,
-    edgeFriction: 0.15,
-
-    /* Stability */
-    accessibility: false,
-		adaptiveHeight: false,
-        responsive: [
-            {
-                breakpoint: 1199,
-                settings: {
-                    slidesToShow: 3,
-                    slidesToScroll: 1,
-					dots: true,
-                }
-            },
-            {
-                breakpoint: 767,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 1,
-					dots: true,
-                }
-            },
-            {
-                breakpoint: 576,
-                settings: {
-                    slidesToShow: 1,
-                    slidesToScroll: 1,
-					dots: true,
-                }
-            }
-        ]
-    });
-	});
-</script>
 
 <?php
 // Click-to-play handler for the inline video players.
@@ -680,54 +525,6 @@ jQuery(document).ready(function($){
 if (!defined('MOTIONEDITS_VIDEO_PLAYER_JS')) {
     define('MOTIONEDITS_VIDEO_PLAYER_JS', true);
     ?>
-    <script>
-    (function () {
-        /* Click the custom play button -> start the real player WITH sound.
-           Because this runs from a real click, browsers allow unmuted playback. */
-        document.addEventListener('click', function (e) {
-            var btn = e.target.closest('.video-play-btn');
-            if (!btn) return;
-
-            var wrap = btn.closest('.video-player');
-            if (!wrap) return;
-
-            if (wrap.dataset.player === 'file') {
-                var video = wrap.querySelector('video');
-                if (!video) return;
-                video.muted = false;
-                video.volume = 1;
-                video.setAttribute('controls', 'controls'); // hand over to native controls
-                video.play();
-            } else {
-                if (wrap.classList.contains('is-loaded')) return;
-                var src = wrap.dataset.src;
-                if (!src) return;
-
-                var iframe = document.createElement('iframe');
-                iframe.src = src;
-                iframe.title = 'Video player';
-                iframe.setAttribute('frameborder', '0');
-                iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
-                iframe.setAttribute('allowfullscreen', '');
-                wrap.appendChild(iframe);
-                wrap.classList.add('is-loaded');
-            }
-
-            wrap.classList.add('is-playing');
-        });
-
-        /* For uploaded files, bring the play button back when paused/ended.
-           play/pause don't bubble, so listen in the capture phase. */
-        ['play', 'pause', 'ended'].forEach(function (evt) {
-            document.addEventListener(evt, function (e) {
-                if (!e.target || e.target.tagName !== 'VIDEO') return;
-                var wrap = e.target.closest('.video-player');
-                if (!wrap) return;
-                wrap.classList.toggle('is-playing', evt === 'play');
-            }, true);
-        });
-    })();
-    </script>
     <?php
 }
 ?>

@@ -235,10 +235,13 @@ function motionedits_scripts() {
 	wp_enqueue_style( 'motionedits-variables', get_template_directory_uri().'/css/variables.css', array(), _S_VERSION );
 	wp_enqueue_style( 'motionedits-aos', get_template_directory_uri().'/css/aos.css', array(), _S_VERSION );
 
-    // Main style.css
+    // Main style.css - served minified (style.min.css). style.css itself stays
+    // unminified since WordPress reads its header comment for theme metadata
+    // and it's easier to hand-edit; regenerate style.min.css after editing it
+    // (see PERFORMANCE_PLAN.md Phase 3).
     wp_enqueue_style(
         'motionedits-style',
-        get_stylesheet_uri(),
+        get_template_directory_uri() . '/style.min.css',
         ['motionedits-bootstrap', 'motionedits-variables'],
         $theme_version
     );
@@ -253,7 +256,7 @@ function motionedits_scripts() {
         get_template_directory_uri() . '/js/bootstrap.bundle.min.js',
         array('jquery'),
         '5.3.8',
-        true
+        array('in_footer' => true, 'strategy' => 'defer')
     );
 
     
@@ -264,7 +267,7 @@ function motionedits_scripts() {
         get_template_directory_uri() . '/js/navigation.js',
         array('jquery'),
         $theme_version,
-        true
+        array('in_footer' => true, 'strategy' => 'defer')
     );
 
 
@@ -273,7 +276,7 @@ function motionedits_scripts() {
         get_template_directory_uri() . '/js/aos.js',
         array('jquery'),
         $theme_version,
-        true
+        array('in_footer' => true, 'strategy' => 'defer')
     );
     
     // Slick Slider JS
@@ -282,7 +285,7 @@ function motionedits_scripts() {
         get_template_directory_uri() . '/js/slick.min.js',
         array('jquery'),
         '1.8.1',
-        true
+        array('in_footer' => true, 'strategy' => 'defer')
     );
 
     wp_enqueue_script(
@@ -290,10 +293,21 @@ function motionedits_scripts() {
         get_template_directory_uri() . '/js/custom.js',
         array('jquery'),
         $theme_version,
-        true
+        array('in_footer' => true, 'strategy' => 'defer')
     );
-    
-    
+
+    // Consolidated section-template inits (Phase 3 cleanup) - was scattered
+    // across components/sections/*.php as inline <script> blocks; moved here
+    // so it's one cacheable, deferred file instead of repeated inline markup.
+    wp_enqueue_script(
+        'motionedits-components-init',
+        get_template_directory_uri() . '/js/components-init.js',
+        array('jquery', 'motionedits-slick', 'motionedits-aos-js'),
+        $theme_version,
+        array('in_footer' => true, 'strategy' => 'defer')
+    );
+
+
 
     // Comment reply for threaded comments
     if (is_singular() && comments_open() && get_option('thread_comments')) {
@@ -371,6 +385,31 @@ function motionedits_get_svg_dimensions($svg_url) {
 	}
 
 	return $cache[$svg_url] = array($width, $height);
+}
+
+/**
+ * Same idea as motionedits_get_svg_dimensions() but for raster images (jpg/
+ * png/webp), used to add width/height attributes and avoid layout shift on
+ * images whose ACF field only returns a URL string, not the full attachment
+ * array.
+ */
+function motionedits_get_image_dimensions($image_url) {
+	static $cache = array();
+
+	if (isset($cache[$image_url])) {
+		return $cache[$image_url];
+	}
+
+	$upload_dir = wp_get_upload_dir();
+	$path       = str_replace($upload_dir['baseurl'], $upload_dir['basedir'], $image_url);
+
+	if (!file_exists($path)) {
+		return $cache[$image_url] = array(0, 0);
+	}
+
+	$size = @getimagesize($path);
+
+	return $cache[$image_url] = $size ? array($size[0], $size[1]) : array(0, 0);
 }
 
 /**
@@ -701,7 +740,7 @@ add_filter('get_custom_logo', function ($html) {
     // Add fetchpriority="high"
     $html = str_replace(
         '<img',
-        '<img fetchpriority="high" loading="lazy"',
+        '<img fetchpriority="high" loading="eager"',
         $html
     );
 
@@ -854,6 +893,116 @@ function motionedits_author_avatar_url($url, $id_or_email) {
     return $url;
 }
 add_filter('get_avatar_url', 'motionedits_author_avatar_url', 10, 2);
+
+/**
+ * Auto-generate a .webp sibling (same convention as the Phase 2/5 bulk
+ * conversion: foo.jpg -> foo.jpg.webp, matching the .htaccess content-
+ * negotiation rule) for every image size WordPress creates on upload, so
+ * new uploads stay covered without another manual batch pass.
+ *
+ * Uses GD (imagewebp) rather than shelling out to cwebp/gif2webp - GD ships
+ * with nearly every PHP install (including most shared hosting), whereas
+ * those CLI binaries may not exist on the production server. The one
+ * tradeoff: GD can't write animated WebP, so an uploaded animated GIF gets
+ * a static (first-frame) WebP sibling rather than an animated one. That's
+ * an acceptable gap going forward since the plan is to stop uploading GIFs
+ * at all, not keep producing new animated ones.
+ */
+function motionedits_generate_webp_siblings($metadata, $attachment_id) {
+	if (!function_exists('imagewebp') || empty($metadata['file'])) {
+		return $metadata;
+	}
+
+	$mime = get_post_mime_type($attachment_id);
+	if (!in_array($mime, array('image/jpeg', 'image/png', 'image/gif'), true)) {
+		return $metadata;
+	}
+
+	$upload_dir = wp_get_upload_dir();
+	$base_dir   = trailingslashit($upload_dir['basedir']) . trailingslashit(dirname($metadata['file']));
+
+	$files = array(basename($metadata['file']));
+	if (!empty($metadata['sizes']) && is_array($metadata['sizes'])) {
+		foreach ($metadata['sizes'] as $size) {
+			if (!empty($size['file'])) {
+				$files[] = $size['file'];
+			}
+		}
+	}
+
+	foreach (array_unique($files) as $file) {
+		$src_path  = $base_dir . $file;
+		$webp_path = $src_path . '.webp';
+
+		if (!file_exists($src_path) || file_exists($webp_path)) {
+			continue;
+		}
+
+		motionedits_make_webp_sibling($src_path, $webp_path, $mime);
+	}
+
+	return $metadata;
+}
+add_filter('wp_generate_attachment_metadata', 'motionedits_generate_webp_siblings', 10, 2);
+
+function motionedits_make_webp_sibling($src_path, $webp_path, $mime) {
+	switch ($mime) {
+		case 'image/jpeg':
+			$image = @imagecreatefromjpeg($src_path);
+			break;
+		case 'image/png':
+			$image = @imagecreatefrompng($src_path);
+			if ($image) {
+				imagepalettetotruecolor($image);
+				imagealphablending($image, true);
+				imagesavealpha($image, true);
+			}
+			break;
+		case 'image/gif':
+			$image = @imagecreatefromgif($src_path); // first frame only
+			break;
+		default:
+			$image = false;
+	}
+
+	if (!$image) {
+		return;
+	}
+
+	imagewebp($image, $webp_path, 80);
+	imagedestroy($image);
+}
+
+/**
+ * Clean up the .webp siblings when an attachment (and its generated sizes)
+ * is deleted, so they don't pile up as orphaned files.
+ */
+function motionedits_delete_webp_siblings($attachment_id) {
+	$metadata = wp_get_attachment_metadata($attachment_id);
+	$file     = get_attached_file($attachment_id);
+
+	if (!$file) {
+		return;
+	}
+
+	$paths = array($file . '.webp');
+
+	if (!empty($metadata['sizes']) && is_array($metadata['sizes'])) {
+		$dir = trailingslashit(dirname($file));
+		foreach ($metadata['sizes'] as $size) {
+			if (!empty($size['file'])) {
+				$paths[] = $dir . $size['file'] . '.webp';
+			}
+		}
+	}
+
+	foreach ($paths as $path) {
+		if (file_exists($path)) {
+			@unlink($path);
+		}
+	}
+}
+add_action('delete_attachment', 'motionedits_delete_webp_siblings');
 
 function add_acf_body_class($classes) {
     $custom_classes = get_field('body_custom_class');

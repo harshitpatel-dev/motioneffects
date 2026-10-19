@@ -1267,7 +1267,7 @@ transform:none !important;
 .site-header .row{align-items: center;}
 .site-header{ border-bottom: 1px solid var(--header-border);background: var(--secondary-color);}
 .site-header .site-branding { max-width: 290px;display: flex;align-items: center;}
-.site-header .site-branding img{filter: brightness(0) saturate(100%) invert(9%) sepia(20%) saturate(2063%) hue-rotate(358deg) brightness(90%) contrast(109%);}
+/* .site-header .site-branding img{filter: brightness(0) saturate(100%) invert(9%) sepia(20%) saturate(2063%) hue-rotate(358deg) brightness(90%) contrast(109%);} */
 
 /* .site-header .main-navigation { width: calc(100% - 266px);} */
 .site-header .main-navigation { width: calc(100% - 476px);}
@@ -2177,7 +2177,7 @@ transform:none !important;
 .grid_columnWrap.has-arrows .grid_column .grid_column_columns .slick-arrow{bottom: -90px;}
 
 .grid_columnWrap .grid_column .grid_column_columns.Tools .slick-dotted.slick-slider { margin-bottom: 30px;}
-.grid_columnWrap .grid_column .grid_column_columns.Tools .slick-arrow.slick-prev { left: 0;z-index; 1;}
+.grid_columnWrap .grid_column .grid_column_columns.Tools .slick-arrow.slick-prev { left: 0;z-index: 1;}
 .grid_columnWrap .grid_column .grid_column_columns.Tools .slick-arrow.slick-next { right: 0;}
 .grid_columnWrap .grid_column .grid_column_columns.Tools .slick-dots { bottom: -8px;}
 
@@ -3939,7 +3939,7 @@ line-height: 48px;text-align: center;color: var(--green-color);padding: 20px 0px
 ------------------------------------------------------------------------------------------------ */
 .site-footer { background: var(--redbrown-color);}
 .site-footer .footer-top {padding: 45px 0 35px;}
-.site-footer .footer-top .footerlogoWrap img{max-width: 416px; object-fit: contain;}
+.site-footer .footer-top .footerlogoWrap img{max-width: 416px; height: auto; object-fit: contain;}
 .site-footer .footer-top ul.contactDetail { padding: 0;margin: 20px 0 0;list-style-type: none;display: flex;flex-wrap: wrap;}
 .site-footer .footer-top ul.contactDetail li,
 .site-footer .footer-top ul.contactDetail li p,

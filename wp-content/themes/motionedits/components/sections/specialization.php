@@ -42,7 +42,7 @@
                                 <div class="content-wrapper">
                                     <?php if(!empty($icon) && !empty($title)): ?>
                                         <div class="image-wrapper">
-                                            <img src="<?php echo $icon;?>" alt="<?php echo $title;?>" fetchpriority="high" loading="lazy" />
+                                            <img src="<?php echo $icon;?>" alt="<?php echo $title;?>" loading="lazy" />
                                         </div>
                                     <?php endif; ?>
                                     <?php if(!empty($title)): ?>

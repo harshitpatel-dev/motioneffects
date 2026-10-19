@@ -33,14 +33,17 @@ $animation_delay = 0;
             <div class="posters-container" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
                 <?php $animation_delay += 200; ?>
                 <div class="posters-content poster-slider row justify-content-center">
-                    <?php foreach ($poster_items as $poster_item):
+                    <?php foreach ($poster_items as $poster_index => $poster_item):
                         $image_url = $poster_item['poster']['url'];
                         $alt_title = $poster_item['poster']['title'];
+                        $image_width = $poster_item['poster']['width'];
+                        $image_height = $poster_item['poster']['height'];
+                        $is_first = $poster_index === 0;
                     ?>
                         <div class="poster-card col-md-4 col-lg-4">
                             <?php if (!empty($image_url)): ?>
                                 <div class="image-wrapper">
-                                    <img src="<?php echo $image_url; ?>" alt="<?php echo $alt_title; ?>" fetchpriority="high" loading="lazy" />
+                                    <img src="<?php echo $image_url; ?>" alt="<?php echo $alt_title; ?>" width="<?php echo esc_attr($image_width); ?>" height="<?php echo esc_attr($image_height); ?>" <?php echo $is_first ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'; ?> />
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -54,51 +57,3 @@ $animation_delay = 0;
 </section>
 
 
-<script>
-    jQuery(document).ready(function() {
-
-        jQuery('.poster-slider').slick({
-            infinite: true,
-            dots: true,
-            arrows: true,
-            autoStart: true,
-            autoplay: true,
-            autoplaySpeed: 2000,
-            speed: 1000,
-            slidesToShow: 4,
-            slidesToScroll: 1,
-            cssEase: 'linear',
-            draggable: true,
-            pauseOnHover: false,
-            pauseOnFocus: false,
-            adaptiveHeight: false,
-            responsive: [{
-                    breakpoint: 1199,
-                    settings: {
-                        slidesToShow: 4,
-                        slidesToScroll: 1,
-                    }
-                },
-                {
-                    breakpoint: 767,
-                    settings: {
-                        slidesToShow: 3,
-                        slidesToScroll: 1,
-                        dots: true,
-                        arrows: true,
-                    }
-                },
-                {
-                    breakpoint: 576,
-                    settings: {
-                        slidesToShow: 2,
-                        slidesToScroll: 1,
-                        dots: true,
-                        arrows: true,
-                    }
-                }
-            ]
-        });
-
-    });
-</script>

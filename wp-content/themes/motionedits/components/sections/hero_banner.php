@@ -115,7 +115,6 @@
 						$company_items = $about_company['items'];
 						$bgColor = $about_company['bg_color'];
 					?>
-				<div class="d-none"><?php print_r($about_company); ?></div>
 					<div class="heroBanner__about heroBanner_commanEffect" style="background-color: <?php echo $bgColor; ?>;" data-aos="fade-up" data-aos-delay="500" data-aos-duration="1000">
 						<div class="heroBanner__about-inner">
 							

@@ -48,7 +48,7 @@ $animation_delay = 0;
                                                     <div class="image-wrapper">
                                                         <div class="image-item skeleton-wrapper">
                                                             <div class="skeleton"></div>
-                                                            <img src="<?php echo esc_url($image['image']); ?>" alt="Gallery Image" fetchpriority="high" loading="lazy"  class="lazy-img">
+                                                            <img src="<?php echo esc_url($image['image']); ?>" alt="Gallery Image" loading="lazy"  class="lazy-img">
                                                             <!-- <img src="<?php //echo get_template_directory_uri(); ?>/imgs/default-image.png" data-src="<?php echo esc_url($image['image']); ?>" alt="Gallery Image" loading="lazy"  class="lazy-img"> -->
                                                         </div>
                                                     </div>
@@ -66,52 +66,3 @@ $animation_delay = 0;
     </div>
 </section>
 
-<script>
-    const scrollers = document.querySelectorAll(".scroller");
-
-    // If a user hasn't opted in for recuded motion, then we add the animation
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    addAnimation();
-    }
-
-    function addAnimation() {
-        scrollers.forEach((scroller) => {
-            // add data-animated="true" to every `.scroller` on the page
-            scroller.setAttribute("data-animated", true);
-
-            const scrollerInner = scroller.querySelector(".scroller__inner");
-            const scrollerContent = Array.from(scrollerInner.children);
-
-            scrollerContent.forEach((item) => {
-            const duplicatedItem = item.cloneNode(true);
-            duplicatedItem.setAttribute("aria-hidden", true);
-            scrollerInner.appendChild(duplicatedItem);
-            });
-        });
-    }
-
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const lazyImages = document.querySelectorAll("img.lazy-img");
-
-        lazyImages.forEach(img => {
-            if (img.complete) {
-            handleImageLoad(img);
-            } else {
-            img.addEventListener("load", function () {
-                handleImageLoad(img);
-            });
-            }
-
-        });
-
-        function handleImageLoad(img) {
-            img.classList.add("loaded");
-            const skeleton = img.parentElement.querySelector(".skeleton");
-            if (skeleton) {
-            skeleton.remove();
-            }
-        }
-    });
-
-</script>

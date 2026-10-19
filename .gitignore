@@ -8,3 +8,6 @@
 !wp-content/themes/
 !wp-content/themes/motionedits/
 !wp-content/themes/motionedits/**
+
+wp-content/themes/motionedits/node_modules
+wp-content/themes/motionedits/node_modules/**

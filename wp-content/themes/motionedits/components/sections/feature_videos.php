@@ -71,7 +71,7 @@ $animation_delay = 0;
                                 <div class="images-contener">
                                     <div class="imgs">
                                         <?php if ($thumbnail): ?>
-                                            <img src="<?php echo $thumbnail; ?>" alt="" fetchpriority="high" loading="lazy">
+                                            <img src="<?php echo $thumbnail; ?>" alt="" loading="lazy">
                                         <?php endif; ?>
                                     </div>
 
@@ -83,7 +83,7 @@ $animation_delay = 0;
                                     <?php else: ?>
                                         <span class="thumbnails-icon disabled">
                                             <img src="<?php echo get_template_directory_uri(); ?>/images/play-icon-white.svg"
-                                                alt="" fetchpriority="high" loading="lazy">
+                                                alt="" loading="lazy">
                                         </span>
                                     <?php endif; ?>
                                 </div>

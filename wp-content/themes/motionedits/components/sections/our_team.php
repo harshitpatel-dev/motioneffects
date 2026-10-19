@@ -42,6 +42,7 @@ $animation_delay = 0;
                         $member_designation = $team_member['member_designation'];
                         $member_bio = $team_member['member_bio'];
                         $reverse = ($index % 2 !== 0);
+                        list($member_image_width, $member_image_height) = motionedits_get_image_dimensions($member_image);
                         ?>
                         <div class="ourteam_row" data-aos="fade-up" data-aos-delay="<?php echo $animation_delay; ?>" data-aos-duration="1000">
                             <?php $animation_delay += 100; ?>
@@ -49,7 +50,7 @@ $animation_delay = 0;
                                 <div class="content-wrap">
                                     <div class="image-border">
                                         <div class="image_wrapper">
-                                            <img src="<?php echo esc_url($member_image); ?>" alt="<?php echo esc_attr($member_name); ?>" loading="lazy">
+                                            <img src="<?php echo esc_url($member_image); ?>" alt="<?php echo esc_attr($member_name); ?>" <?php if (!empty($member_image_width) && !empty($member_image_height)): ?>width="<?php echo esc_attr($member_image_width); ?>" height="<?php echo esc_attr($member_image_height); ?>"<?php endif; ?> loading="lazy">
                                         </div>
                                     </div>
                                 </div>

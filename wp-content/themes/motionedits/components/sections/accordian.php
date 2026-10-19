@@ -190,33 +190,3 @@ $animation_delay = 0;
 
 
 <!-- FILTER SCRIPT -->
-<script>
-jQuery(document).ready(function () {
-
-    jQuery(".filter-button-group li button").on("click", function () {
-
-        let category = jQuery(this).data("category"); // slug
-
-        // Hide all
-        jQuery(".faq-block").hide();
-
-        // Show selected
-        jQuery(".faq-" + category).show();
-
-        // Open first item in selected category ONLY
-        jQuery(".faq-" + category)
-            .find(".accordion-collapse")
-            .removeClass("show")
-            .first()
-            .addClass("show");
-    });
-
-    // Default active category
-    let firstCat = jQuery(".filter-button-group li button.active").data("category");
-
-    if (firstCat) {
-        jQuery(".faq-block").hide();
-        jQuery(".faq-" + firstCat).show();
-    }
-});
-</script>

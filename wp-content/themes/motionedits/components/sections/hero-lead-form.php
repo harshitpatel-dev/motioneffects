@@ -122,7 +122,7 @@ $form_shortcode = get_sub_field('form_shortcode');
 											<div class="content-wrapper">
 												<?php if (!empty($icon_url) && !empty($card_title)): ?>
 													<div class="image-wrapper">
-														<img src="<?php echo esc_url($icon_url); ?>" alt="<?php echo esc_attr($card_title); ?>" fetchpriority="high" loading="lazy"
+														<img src="<?php echo esc_url($icon_url); ?>" alt="<?php echo esc_attr($card_title); ?>" loading="lazy"
 															<?php if (!empty($icon_width) && !empty($icon_height)): ?>
 																width="<?php echo esc_attr($icon_width); ?>" height="<?php echo esc_attr($icon_height); ?>"
 															<?php endif; ?> />
@@ -172,34 +172,4 @@ $form_shortcode = get_sub_field('form_shortcode');
 </section>
 
 <?php if (false): ?>
-	<script>
-		// (function () {
-		// 	// Vertical slider for hero lines
-		// 	var track = document.getElementById('heroSliderTrack');
-		// 	if (!track) return;
-		// 	var items = track.querySelectorAll('.ppc-slider-item');
-		// 	if (!items.length) return;
-		// 	var total = items.length;
-		// 	var current = 0;
-		// 	var itemHeight = items[0].offsetHeight || 40;
-
-		// 	function slide() {
-		// 		current = (current + 1) % total;
-		// 		track.style.transform = 'translateY(-' + (current * itemHeight) + 'px)';
-		// 	}
-
-		// 	// Recalculate on resize
-		// 	window.addEventListener('resize', function () {
-		// 		itemHeight = items[0].offsetHeight || 40;
-		// 		track.style.transition = 'none';
-		// 		track.style.transform = 'translateY(-' + (current * itemHeight) + 'px)';
-		// 		// force reflow then restore transition
-		// 		void track.offsetWidth;
-		// 		track.style.transition = '';
-		// 	});
-
-		// 	track.style.transition = 'transform 0.5s cubic-bezier(.2,1,.3,1)';
-		// 	setInterval(slide, 3000);
-		// })();
-	</script>
 <?php endif; ?>

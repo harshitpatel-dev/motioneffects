@@ -17,8 +17,18 @@
 					<div class="footerlogo-contactdetail col-xl-7 col-md-6">
 						<div class="footerlogoWrap">
 							<?php $logo = get_field( 'logo', 'option' ); ?>
-							<?php if ( $logo ) : ?>
-								<img src="<?php echo esc_url( $logo['url'] ); ?>" alt="<?php echo esc_attr( $logo['alt'] ); ?>" />
+							<?php if ( $logo ) :
+								$logo_width  = $logo['width'];
+								$logo_height = $logo['height'];
+								if ( empty( $logo_width ) || empty( $logo_height ) ) {
+									// ACF/WP always reports width/height as 0 for SVGs (it
+									// doesn't parse SVG internals) - read the real dimensions
+									// from the file itself, same helper used for icon SVGs
+									// elsewhere in this theme.
+									list( $logo_width, $logo_height ) = motionedits_get_svg_dimensions( $logo['url'] );
+								}
+							?>
+								<img src="<?php echo esc_url( $logo['url'] ); ?>" alt="<?php echo esc_attr( $logo['alt'] ); ?>" <?php if ( ! empty( $logo_width ) && ! empty( $logo_height ) ) : ?>width="<?php echo esc_attr( $logo_width ); ?>" height="<?php echo esc_attr( $logo_height ); ?>"<?php endif; ?> loading="lazy" />
 							<?php endif; ?>
 						</div>
 						<?php if ( have_rows( 'contact_detail', 'option' ) ) : ?>
